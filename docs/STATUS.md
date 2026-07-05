@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-05.
 
-## Fase 0 — Hallazgos de honestidad (bloquean afirmaciones previas)
+## Fase 0 — Hallazgos de rigor (bloquean afirmaciones previas)
 
 Registrados al reformular el track (ver [DECISION.md](DECISION.md) y
 [HARDNESS.md](HARDNESS.md)). Estos hallazgos **invalidan afirmaciones hechas más

@@ -109,7 +109,7 @@ Lecturas:
 
 1. **t=4 (tetraedro): la matriz tipo-haz ES MDS** (rama 5 = cota), en las 5
    semillas y en ambos cuerpos. En K₄ el patrón de haz genera matrices
-   simétricas densas genéricas ⇒ MDS con probabilidad ≈ 1 (honestidad: en t=4
+   simétricas densas genéricas ⇒ MDS con probabilidad ≈ 1 (nota: en t=4
    "estructura de haz" ≈ "simétrica densa"; la estructura no restringe).
 2. **t=5, t=6: déficit de exactamente 1** respecto a la cota MDS (5/6 y 6/7),
    con los ceros exactamente en los pares no adyacentes. Mejor de lo que la

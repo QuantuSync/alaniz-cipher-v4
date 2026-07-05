@@ -2,7 +2,7 @@
 attacks/A6_dreg_public_system.py — empirical D_reg of the message-recovery
 system, measured on the H3-corrected reference scheme. Fixed seed, fixed nonce.
 
-Scope note (honesty, see docs/HARDNESS.md §H2):
+Scope note (see docs/HARDNESS.md §H2):
   The degree-3e system in α is available to a CHOSEN-PLAINTEXT attacker who
   fixes the nonce and interpolates the map α → c from oracle queries (this needs
   NO secret key — it is pure input/output fitting). With FRESH nonces the map

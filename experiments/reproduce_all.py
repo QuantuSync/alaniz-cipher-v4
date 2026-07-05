@@ -1,7 +1,7 @@
 """
 experiments/reproduce_all.py — one-command reproduction (portable, galois-free).
 
-Runs the fast, deterministic baseline that establishes the repo is honest and
+Runs the fast, deterministic baseline that establishes the repo is reproducible and
 functional at small scale:
   1. The full pytest suite.
   2. A fixed-seed end-to-end roundtrip at (tetra, d=6, p=257).

@@ -11,7 +11,7 @@ El cifrado multivariante de clave pública requiere un **mapa central de grado 2
 para que el mapa público compuesto sea publicable. La σ de Alaniz es de **grado
 alto (e)** — de ahí su seguridad, pero también la imposibilidad de publicar el
 mapa α→c (grado 3e). Consecuencia: **no es viable una PKE multivariante estándar
-con esta σ**. Los caminos honestos son KEM/simétrico con asimetría propia, o
+con esta σ**. Los caminos viables son KEM/simétrico con asimetría propia, o
 publicación de análisis. Toda decisión de diseño se toma con esta restricción en
 mente.
 
@@ -20,7 +20,7 @@ mente.
 | Track | Qué es | Riesgo | Certeza de publicación |
 |-------|--------|--------|------------------------|
 | **A — KEM/simétrico sobre NL-SMIP** | Primitiva con clave precompartida o KEM con asimetría nueva; cohomología de haces como estructura | Medio-alto | Media-alta si el criptoanálisis aguanta |
-| **B — Paper de criptoanálisis / espacio de diseño** | El arco v1→Langa→v4: construcciones, ataques, lo que sobrevive y por qué | Bajo | Alta (los negativos honestos se publican) |
+| **B — Paper de criptoanálisis / espacio de diseño** | El arco v1→Langa→v4: construcciones, ataques, lo que sobrevive y por qué | Bajo | Alta (los resultados negativos se publican) |
 | **C — PKE novedosa** | Nueva asimetría no basada en publicar el mapa | Muy alto | Baja |
 
 **Recomendación**: perseguir **A** como objetivo técnico, con **B** como
@@ -32,7 +32,7 @@ enunciado del problema duro sobre *datos realmente públicos*.
 
 ---
 
-## Fase 0 — Saneamiento y honestidad (1–2 semanas)
+## Fase 0 — Saneamiento y rigor (1–2 semanas)
 
 Objetivo: que el repo diga la verdad y tenga una única implementación de referencia.
 
@@ -158,7 +158,7 @@ Gate 5: preprint en ePrint + repo reproducible enlazado.
 3. **Separar siempre "verificado" / "parcial" / "conjetura" / "abierto"** (ya lo
    haces en STATUS: mantenerlo religiosamente).
 4. **Exposición pública temprana** (ePrint) e invitación explícita a romperlo.
-5. **Honestidad sobre madurez**: nunca "producción", nunca "seguro" sin años de
+5. **Rigor sobre madurez**: nunca "producción", nunca "seguro" sin años de
    análisis externo. Modo híbrido si algún día se despliega.
 
 ## Expectativa realista
@@ -167,4 +167,4 @@ Una PKE novedosa casi siempre se rompe (SFLASH, Rainbow, GeMSS… y la propia l�
 de grafos con Langa). Las contribuciones más seguras aquí son: (a) el **problema
 duro** bien planteado, (b) el **criptoanálisis**, (c) un **KEM/simétrico** bien
 analizado. El plan está diseñado para que, gane o pierda el cifrado, salga una
-aportación científica honesta y publicable.
+aportación científica rigurosa y publicable.

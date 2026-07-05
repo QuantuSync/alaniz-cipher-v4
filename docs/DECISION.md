@@ -31,7 +31,7 @@ Dos restricciones no negociables gobiernan el proyecto:
 - **Track de publicación garantizado: B — paper de criptoanálisis / espacio de
   diseño.** El arco v1→Langa→v4 (construcciones, ataques, lo que sobrevive y por
   qué) se documenta con el mismo trabajo de Fase 1. Los resultados negativos
-  honestos también se publican.
+  también se publican.
 
 - **C — PKE novedosa: descartado**, salvo que en Fase 1 aparezca una asimetría
   genuinamente nueva y validada.
@@ -45,7 +45,7 @@ Dos restricciones no negociables gobiernan el proyecto:
 | A_v, B_e, C_t | **Secreto (parte de la clave compartida)** | Necesarias para cifrar y descifrar; se tratan como secretas (simétrico puro). Su estatus se reevaluará solo si Fase 1 (A4 MinRank, A5 recuperación de β) muestra que son recuperables o inertes. |
 | β_v | **Secreto (parte de la clave compartida)** | Trapdoor de σ; necesario para cifrar y descifrar. |
 
-> Nota: la clasificación de A,B,C como secretas es la formulación **más honesta y
+> Nota: la clasificación de A,B,C como secretas es la formulación **más
 > conservadora** del problema duro. No cierra la puerta al Track A: si Fase 1
 > demuestra que publicar A,B,C no reduce la dureza, podrá revisarse aquí con un
 > memo nuevo.
@@ -63,7 +63,7 @@ Dos restricciones no negociables gobiernan el proyecto:
 
 ## Expectativa
 
-Gane o pierda la construcción, la contribución honesta sale de: (a) el problema
+Gane o pierda la construcción, la contribución sale de: (a) el problema
 duro bien planteado (NL-SMIP), (b) el criptoanálisis propio (Fase 1), (c) un
 KEM/simétrico bien analizado si sobrevive. Ese es el objetivo de este track.
 
@@ -147,7 +147,7 @@ Se cumplen **dos** disparadores de NO-GO simultáneamente:
 
 ### Consecuencia: Track B (paper de criptoanálisis / espacio de diseño)
 
-Contenido honesto y publicable ya disponible, con scripts reproducibles:
+Contenido publicable ya disponible, con scripts reproducibles:
 - **H1** — no es clave pública (cifrar necesita el secreto).
 - **H3** — colapso de entropía tipo Langa (β casi-escalar, ~62 bits), detectado y
   corregido por nosotros antes de cualquier revisor.
@@ -185,7 +185,7 @@ verificada en **msolve real**), coste en `experiments/05_spn_cost.py`. Motor
 Gröbner desbloqueado (msolve/WSL). Escala pequeña (proxies Goldilocks-like),
 semillas fijas.
 
-### Veredicto: **Track B — PAPER COMPARATIVO HONESTO** ("difusión por haz vs MDS").
+### Veredicto: **Track B — PAPER COMPARATIVO** ("difusión por haz vs MDS").
 
 El rediseño multi-ronda cumple la lección (grado por composición, no por S-box
 cara): **nada lo rompe barato** — la seguridad CICO crece limpiamente como
@@ -216,7 +216,7 @@ publicable:
    (~8 sumas + doblados, ~0 mults genéricas): ~648 vs. mucho menos por
    permutación. La estructura geométrica y el coste AO están **en tensión**.
 
-### Contribución publicable (honesta, con scripts reproducibles)
+### Contribución publicable (con scripts reproducibles)
 
 Narrativa: *"Difusión estructurada por haz — casi-óptima (déficit de exactamente
 1 rama vs MDS) pero sin ventaja algebraica y en tensión con el coste de
@@ -262,7 +262,7 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > (19208) y el nulo (2401) ⇒ ley **verificada**, no solo conjetura; **(D)** con el
 > mínimo el coste neto es **0.87-0.89× baseline**, tetraedro **0.73× Poseidon2**.
 > Dispara el criterio de **candidato real**. Detalle: [CRYPTANALYSIS.md](CRYPTANALYSIS.md)
-> (C1-A, C1-C). Sigue la lección honesta: timeouts (R=4, R=2/m=3) se reportan como
+> (C1-A, C1-C). Sigue el criterio: timeouts (R=4, R=2/m=3) se reportan como
 > huecos, no como confirmación.
 
 > **Campaña final 2026-07-05 (primitiva candidata, Bloques 1-5).** Flancos
@@ -272,7 +272,7 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > CICO-1; eliminante = D_I), sin atajo. **(4) Instanciación Alaniz-AO** — t=8, R=8,
 > esponja, ~1.30× Poseidon2 en R1CS (`src/crypto/alaniz_ao.py`, `docs/SPEC.md`).
 > **(5) Transferencia** — D_I idéntico en proxies de 5–31 bits ⇒ estructural ⇒
-> transfiere a Goldilocks (residual real abierto). **Hueco honesto (2):** escalar
+> transfiere a Goldilocks (residual real abierto). **Hueco (2):** escalar
 > más allá de R=3 excede el motor (F4/FGLM); mayor punto resuelto = 9604; R≥4
 > abierto. **Veredicto: primitiva candidata con todos los flancos medidos salvo el
 > escalado del motor y el convenio de capacidad, ambos abiertos y documentados.**
@@ -329,7 +329,7 @@ estructura de haz al **acoplamiento a la entrada de la S-box** es lo primero que
    Dispara el criterio de **candidato real** (baja R\*, resiste FreeLunch/
    CheapLunch, ≤2× Poseidon2).
 
-### Contribución (positiva y honesta)
+### Contribución (positiva)
 
 - **Fenómeno nuevo y limpio:** la geometría simplicial, como acoplamiento no-lineal
   a la entrada de la S-box, **añade exactamente +1 bit de grado CICO por ronda** —

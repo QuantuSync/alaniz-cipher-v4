@@ -27,7 +27,7 @@ invertible carril a carril con una raíz 7-ésima; verificado por roundtrip y (a
 escala pequeña) exhaustivamente. Esponja: absorción/exprimido con rate 4 y padding
 inyectando un 1.
 
-## 3. Contabilidad de seguridad y elección de R (honesta)
+## 3. Contabilidad de seguridad y elección de R
 
 Rondas seguras = `max(R*_algebraico, R*_diff/lin)` + margen. Bajo el modelo de
 coste **ω=2** (sparse-FGLM) y la ley **verificada** `D_I = 7^(R·m)·m·2^(R−1)`:

@@ -131,7 +131,7 @@ Fase 1 con Sage/msolve.
 **Estado:** parcial (d∈{2,3} medido; d≥4 pendiente Sage/Magma).
 **Script:** `attacks/A6_dreg_public_system.py` (semilla 20260705, nonce fijo).
 
-### Modelo y alcance (honestidad, ver [HARDNESS.md](HARDNESS.md) §H2)
+### Modelo y alcance (ver [HARDNESS.md](HARDNESS.md) §H2)
 
 El sistema de grado 3e en α **solo** es accesible a un atacante de texto claro
 **elegido** que **fija el nonce** e interpola el mapa α→c con consultas al oráculo
@@ -501,7 +501,7 @@ en todos). Octaedro (no completo ⇒ haz ≠ denso), input, m=1:
 > **acoplamiento no-lineal a la entrada de la S-box x⁷** en un SPN algebraico, NO de
 > la incidencia de haz. La estructura de haz fue la **inspiración, no el mecanismo**.
 
-Matiz honesto emergente (ortogonal al control): a m≥2 el factor depende de cuántas
+Matiz emergente (ortogonal al control): a m≥2 el factor depende de cuántas
 **ramas libres** toca el acoplamiento, no del patrón — un solo término que cubre 1
 de 2 ramas libres da 4802 (=7⁴·2) en vez de 9604 (=7⁴·4); haz y chain coinciden en
 ese 4802. La ley `m·2^(R-1)` supone acoplar todas las ramas de tasa (restricción de
@@ -540,7 +540,7 @@ degree suba (t=4: 10→11→12) o baje (t=6 R=3: 7) es secundario: la seguridad 
 mayores requieren más RAM/tiempo. R\* y coste siguen **extrapolados** de la ley
 verificada bajo ω=2.
 
-## C1-scale — Escalar la ley (Bloque 2): límite del motor, hueco honesto
+## C1-scale — Escalar la ley (Bloque 2): límite del motor, hueco reportado
 
 WSL a **24 GB / 16 hilos** (`.wslconfig`). Intento de resolver un punto más allá
 de R≤3:
@@ -665,7 +665,7 @@ acoplamiento en el carril t−1) + R_f/2 completas. Biyectiva (exhaustivo 31⁴)
 > (más ×2 del acoplamiento) por ronda. El solving degree **crece** (9→16), no
 > colapsa ⇒ sigue D_I-bound (FreeLunch/CheapLunch no se benefician).
 
-**Huecos honestos:** (i) a m=2 (esponja) tanto D_I como el solving degree de las
+**Huecos reportados:** (i) a m=2 (esponja) tanto D_I como el solving degree de las
 config. con parciales hacen **timeout** (motor); la generalización de "parcial =
 completa" a m>1 se apoya en el argumento de difusión MDS, no en medida directa.
 (ii) La lección Poseidon: las rondas parciales pueden habilitar **ataques

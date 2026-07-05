@@ -34,7 +34,7 @@ criptoanálisis: la dureza de recuperación de clave recae aquí, ver A5a).
 S(y)_v = σ_v(ι(y_v)) = β_v · ι(y_v) + (β_v − 1) · (L · ι(y_v) + 1)^e
 ```
 
-> **Matiz crítico (honestidad):** σ_v **NO es una permutación** de F_{p^d}. El
+> **Matiz crítico:** σ_v **NO es una permutación** de F_{p^d}. El
 > término potencia `(L·τ+1)^e` sí es biyección (afín ∘ potencia con `gcd(e,q−1)=1`),
 > pero la suma `β·τ + (β−1)·(·)^e` rompe la inyectividad: el decryptor enumera en
 > promedio ~2.1 raíces por vértice. Consecuencias:

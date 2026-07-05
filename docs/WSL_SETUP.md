@@ -48,7 +48,7 @@ usuario) con salida a log.
 ## Misión del proyecto
 
 Desarrollar y fortalecer **un nuevo tipo de cifrado o solución criptográfica**,
-hasta algo **fuerte o publicable** — una aportación científica honesta, no un
+hasta algo **fuerte o publicable** — una aportación científica rigurosa, no un
 producto.
 
 ## Qué debe hacer la Sesión 2 (tras el reinicio) — pegar el **Prompt B**

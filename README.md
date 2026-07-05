@@ -3,7 +3,7 @@
 **Status: reproducible research record (not a product).** This repository documents,
 with reproducible experiments, the design-and-cryptanalysis arc of a symmetric
 arithmetization-oriented (AO) primitive, ending in one positive central result and
-several honest negative results along the way.
+several negative results along the way.
 
 > Secure-round counts (R\*) and cost figures are **extrapolations** of a *measured*
 > law, under an explicit cost model (ω=2). Nothing is called "secure" without that
@@ -75,7 +75,7 @@ print(sponge_hash([1, 2, 3, 4, 5]))     # 4 Goldilocks field elements
 3. **High-degree σ in one round (AO model)** → broken: A6-CICO solves at cubic degree
    independent of e; an expensive S-box buys no AO security in a single layer.
 4. **Sheaf structure as a LINEAR layer** → no algebraic advantage (D_I=7^(R·m),
-   independent of branch number); an honest "sheaf diffusion vs MDS" comparison.
+   independent of branch number); a "sheaf diffusion vs MDS" comparison.
 5. **Sheaf structure as NON-LINEARITY (S-box input)** → **the positive result**: the
    +1 bit/round above, later shown to be generic.
 

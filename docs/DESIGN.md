@@ -69,7 +69,7 @@ This is m·d cubic polynomials in d_msg variables.
 
 **Step 4 — F4 solving**: solve the cubic system via Macaulay-matrix linearization at degree D = D_reg (the regularity degree, ~5 for typical parameters). The system is semi-regular (empirically verified at d=6); kernel dimension 1 yields a unique solution α.
 
-**Step 5 — Verification**: re-encrypt α and check ciphertext matches. If yes, output α. If no, try next combo. If no combo works, decryption fails (this happens with negligible probability for honestly-generated ciphertexts).
+**Step 5 — Verification**: re-encrypt α and check ciphertext matches. If yes, output α. If no, try next combo. If no combo works, decryption fails (this happens with negligible probability for correctly-generated ciphertexts).
 
 ## Key generation
 
