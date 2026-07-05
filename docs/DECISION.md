@@ -265,6 +265,17 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > (C1-A, C1-C). Sigue la lección honesta: timeouts (R=4, R=2/m=3) se reportan como
 > huecos, no como confirmación.
 
+> **Control decisivo 2026-07-05 (¿haz o genérico?).** El +1 bit/ronda es
+> **GENÉRICO**, no de haz: cuatro incidencias triangulares (haz, denso, chain, star)
+> dan **D_I y F4 idénticos** (octaedro, m=1: 98/1372/deg-9; punto grande m=2: haz y
+> chain ambos 4802). Los pesos ya eran PRG arbitrarios; variar la semilla tampoco
+> cambia D_I. **La estructura de haz fue inspiración, no mecanismo.** El hallazgo se
+> reformula como principio general de diseño AO: *colocar el acoplamiento en la
+> ENTRADA no-lineal de la S-box (no en la capa lineal, no aditivo tras la potencia)
+> añade +1 bit de grado CICO por ronda, con independencia de la incidencia*.
+> Evidencia: [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1-generic),
+> `experiments/09`. **Camino: redactar** (el mecanismo es general y publicable).
+
 ### Veredicto previo (Paso 3-4 inicial): primer resultado positivo — candidato promisorio.
 
 Tras dos negativos (haz lineal = sin ventaja; SPN de haz no competitivo), mover la

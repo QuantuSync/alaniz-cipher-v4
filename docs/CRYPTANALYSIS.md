@@ -477,3 +477,32 @@ tetraedro **0.73× Poseidon2**. La victoria de coste, antes inferida, ahora est�
 = **verificadas** (incl. punto grande 9604). R\* y coste **extrapolados** de la ley
 verificada bajo ω=2 explícito. Capa MDS ⇒ rondas parciales siguen disponibles (aún
 sin explotar).
+
+## C1-generic — CONTROL decisivo: el +1 bit/ronda es GENÉRICO, no de haz (verificado)
+
+La independencia de densidad sugería que el +1 bit/ronda podía ser genérico del
+acoplamiento a la entrada, no de la estructura de haz. Control único
+(`experiments/09_coupling_sheaf_vs_generic.py`): cuatro incidencias triangulares
+que difieren SOLO en qué par acopla en cada vértice (pesos ya son PRG arbitrarios
+en todos). Octaedro (no completo ⇒ haz ≠ denso), input, m=1:
+
+| patrón | #términos | D_I(R=2) | D_I(R=3) | F4 deg(R=2) |
+|---|---|---|---|---|
+| haz (simplicial) | 8 | 98 | 1372 | 9 |
+| haz (semilla 2) | 8 | 98 | 1372 | 9 |
+| denso (todos a<b<v) | 20 | 98 | 1372 | 9 |
+| chain (v→v-2,v-1) | 4 | 98 | 1372 | 9 |
+| star (v→0,1) | 4 | 98 | 1372 | 10 |
+
+**Todos idénticos** (D_I y F4). Punto grande (R=2,m=2): haz y chain **ambos =
+4802**. Además haz vs haz-semilla-2 idéntico ⇒ D_I genérico también en los pesos.
+
+> **Veredicto del control: el +1 bit/ronda es GENÉRICO.** Es una propiedad del
+> **acoplamiento no-lineal a la entrada de la S-box x⁷** en un SPN algebraico, NO de
+> la incidencia de haz. La estructura de haz fue la **inspiración, no el mecanismo**.
+
+Matiz honesto emergente (ortogonal al control): a m≥2 el factor depende de cuántas
+**ramas libres** toca el acoplamiento, no del patrón — un solo término que cubre 1
+de 2 ramas libres da 4802 (=7⁴·2) en vez de 9604 (=7⁴·4); haz y chain coinciden en
+ese 4802. La ley `m·2^(R-1)` supone acoplar todas las ramas de tasa (restricción de
+diseño barata), no altera el veredicto genérico.

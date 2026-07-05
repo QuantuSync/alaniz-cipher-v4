@@ -46,6 +46,27 @@ def test_density_selects_prefix_of_terms():
         assert terms_full == full
 
 
+def test_pattern_terms_are_triangular_and_bijective():
+    """Sheaf/dense/chain/star control patterns are all triangular (a<b<v) hence
+    bijective for every coupling mode."""
+    p = PROXY_PRIME_30
+    for K in (Complex2D.tetrahedron(), Complex2D.octahedron()):
+        for pat in ("sheaf", "dense", "chain", "star"):
+            terms = C.pattern_terms(K, pat)
+            for (v, a, b) in terms:
+                assert a < b < v
+            for mode in MODES:
+                prm = C.CoupledParams(K, p, 2, mode, terms=terms)
+                x = [(i * 31 + 5) % p for i in range(K.n)]
+                assert C.permute_inverse(prm, C.permute(prm, x)) == x
+    # dense on the (complete) tetrahedron == sheaf; on octahedron it is strictly
+    # larger (octahedron is not a complete complex) -> the control discriminator.
+    assert set(C.pattern_terms(Complex2D.tetrahedron(), "dense")) == \
+        set(C.pattern_terms(Complex2D.tetrahedron(), "sheaf"))
+    assert len(C.pattern_terms(Complex2D.octahedron(), "dense")) > \
+        len(C.pattern_terms(Complex2D.octahedron(), "sheaf"))
+
+
 def test_minimal_coupling_bijective_exhaustive():
     """The minimal (density=1) input coupling is a bijection (exhaustive 31^4)."""
     p = PROXY_PRIMES[0]

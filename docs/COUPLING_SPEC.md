@@ -130,3 +130,14 @@ acoplamiento mínimo **conjetura respaldada** → **verificado en §7**.
   tetraedro **0.73× Poseidon2**. Capa MDS ⇒ rondas parciales aún disponibles.
 
 **Veredicto: candidato real** (ver [DECISION.md](DECISION.md#veredicto-camino-1)).
+
+## 8. Control decisivo (VERIFICADO) — el +1 bit/ronda es GENÉRICO, no de haz
+
+`experiments/09_coupling_sheaf_vs_generic.py`. Cuatro incidencias triangulares
+(haz, denso, chain, star; pesos ya PRG arbitrarios) sobre el octaedro (no completo
+⇒ haz ≠ denso), input, m=1: **D_I (98/1372) y solving degree F4 (9-10) IDÉNTICOS**
+en las cuatro; punto grande m=2 haz=chain=4802. El +1 bit/ronda es propiedad del
+**acoplamiento no-lineal a la ENTRADA de la S-box x⁷**, no de la incidencia de haz.
+**La estructura de haz fue inspiración, no mecanismo.** Reformulado como principio
+general de diseño AO. Camino: redactar. Detalle en
+[CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1-generic) y [DECISION.md](DECISION.md).

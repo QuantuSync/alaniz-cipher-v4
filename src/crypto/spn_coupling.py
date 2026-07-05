@@ -73,6 +73,31 @@ def at_from_terms(terms):
     return at
 
 
+def pattern_terms(K, pattern):
+    """Triangular coupling term lists for the sheaf-vs-generic CONTROL.
+
+    All patterns are triangular (a<b<v) hence bijective; they differ only in the
+    incidence (which earlier pair couples into v), so the control isolates whether
+    the +1-bit/round effect needs the SHEAF incidence or is generic to any
+    input-coupling.
+      'sheaf'   : pairs from the complex's 2-simplices (== triangle_terms).
+      'dense'   : ALL pairs a<b<v for every v (complete triangular; ignores K).
+      'chain'   : v couples to (v-2, v-1) for v>=2 (local, non-sheaf).
+      'star'    : v couples to (0, 1) for v>=2 (fixed, non-sheaf).
+    """
+    n = K.n
+    if pattern == "sheaf":
+        return triangle_terms(K)
+    if pattern == "dense":
+        return [(v, a, b) for v in range(n - 1, -1, -1)
+                for a in range(n) for b in range(a + 1, n) if b < v]
+    if pattern == "chain":
+        return [(v, v - 2, v - 1) for v in range(n - 1, 1, -1)]
+    if pattern == "star":
+        return [(v, 0, 1) for v in range(n - 1, 1, -1)]
+    raise ValueError(f"unknown pattern {pattern!r}")
+
+
 def coupling_at(K, density):
     """Coupling structure at the requested density.
 
@@ -145,7 +170,8 @@ class CoupledParams:
     with M a NEUTRAL Cauchy-MDS layer (identical across coupling modes so the
     only variable under study is the coupling itself)."""
 
-    def __init__(self, K, p, R, mode, seed=b"coupling/v1", d=None, density=None):
+    def __init__(self, K, p, R, mode, seed=b"coupling/v1", d=None, density=None,
+                 terms=None):
         self.K = K
         self.t = K.n
         self.p = p
@@ -155,7 +181,12 @@ class CoupledParams:
         self.d, self.d_inv = sbox_exponents(p, d)
         self.M = cauchy_mds(K.n, p)
         self.Minv = matrix_inverse_fp(self.M, p)
-        self.at, self.terms = coupling_at(K, density)      # density=None -> full
+        if terms is not None:                               # explicit override
+            self.terms = list(terms)
+            self.at = {v: [] for v in range(K.n)}
+            self.at.update(at_from_terms(self.terms))
+        else:
+            self.at, self.terms = coupling_at(K, density)   # density=None -> full
         self.w = coupling_weights(self.at, p, seed + b"/couple")
         self.rc = [prg_vec(seed + b"/rc", "round", r, self.t, p) for r in range(R)]
         self.rc_init = prg_vec(seed + b"/rc", "init", 0, self.t, p)
