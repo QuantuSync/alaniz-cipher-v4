@@ -34,10 +34,33 @@ All measured in a real Gröbner engine (msolve):
 - **Density-independent.** A single coupling term per round keeps the full gain, so
   the defended construction is the **minimal** one (1 mult/round): net **0.87–0.89×**
   the baseline in R1CS constraints, and the tetrahedron **0.73×** Poseidon2.
-- **Resists FreeLunch** (eprint 2024/347): D_I is invariant under the monomial order
-  and the modeling, so the FreeLunch cost (= FGLM(D_I)) follows the nominal curve and
-  does not collapse to the baseline. See
-  [docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md) (C1-freelunch).
+- **Resists FreeLunch, CheapLunch, resultants** (eprint 2024/347, 2025/2040,
+  2025/259+2026/1281): all three are D_I-bound and were *run*, not just argued
+  (CICO-2 gives larger D_I than CICO-1; the resultant eliminant degree equals D_I).
+  D_I is invariant under the monomial order and modeling, so the cost follows the
+  nominal curve. See [docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md).
+- **Differential/linear covered.** S-box MDP=2⁻⁶¹, MLC=2⁻²⁹; with an MDS layer the
+  wide-trail secure rounds R\*_difflin=2 ≪ the algebraic bound, and the input
+  coupling does not degrade the per-S-box uniformity. See
+  [docs/WIDE_TRAIL.md](docs/WIDE_TRAIL.md).
+- **Transfers across characteristic.** D_I and the F4 solving degree are identical
+  over proxy primes from 5 to 31 bits ⇒ structural ⇒ carries to Goldilocks (running
+  the actual 64-bit system is out of the engine's reach; kept open).
+
+## Instantiation
+
+A concrete permutation and sponge hash — **Alaniz-AO** (t=8, R=8, x⁷ over
+Goldilocks, Cauchy-MDS layer, minimal chain input-coupling, rate/capacity 4) — is
+specified in [docs/SPEC.md](docs/SPEC.md) and implemented in
+`src/crypto/alaniz_ao.py` (~1.30× Poseidon2 in R1CS). Round count and cost are
+extrapolated from the verified law under ω=2; the binding CICO capacity convention
+is documented as open.
+
+```python
+import sys; sys.path.insert(0, "src")
+from crypto.alaniz_ao import sponge_hash
+print(sponge_hash([1, 2, 3, 4, 5]))     # 4 Goldilocks field elements
+```
 
 ## The arc (negative results preserved)
 
@@ -75,6 +98,9 @@ python experiments/08_coupling_density_sweep.py     # density independence
 python experiments/09_coupling_sheaf_vs_generic.py  # sheaf-vs-generic control
 python experiments/07_coupling_cost_verdict.py      # R* and cost (extrapolated, ω=2)
 python attacks/A_freelunch_minimal.py               # FreeLunch on the minimal build
+python attacks/A_cheaplunch_resultant.py            # CheapLunch + resultant (run, not argued)
+python experiments/10_wide_trail.py                 # differential/linear (wide-trail)
+python experiments/11_transfer_proxies.py           # proxy -> Goldilocks transfer (needs msolve)
 ```
 
 msolve-invoking scripts call it as `wsl msolve -f <file> [-g 2] [-t 16]`. Engine

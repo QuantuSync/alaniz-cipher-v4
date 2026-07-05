@@ -265,6 +265,18 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > (C1-A, C1-C). Sigue la lección honesta: timeouts (R=4, R=2/m=3) se reportan como
 > huecos, no como confirmación.
 
+> **Campaña final 2026-07-05 (primitiva candidata, Bloques 1-5).** Flancos
+> cubiertos: **(1) wide-trail** — R*_difflin=2 ≪ algebraico; el acoplamiento a la
+> entrada NO degrada la uniformidad diferencial (MDP 2⁻⁶¹, MLC 2⁻²⁹); gobierna el
+> algebraico. **(3) CheapLunch + resultantes corridos** — ambos D_I-bound (CICO-2 >
+> CICO-1; eliminante = D_I), sin atajo. **(4) Instanciación Alaniz-AO** — t=8, R=8,
+> esponja, ~1.30× Poseidon2 en R1CS (`src/crypto/alaniz_ao.py`, `docs/SPEC.md`).
+> **(5) Transferencia** — D_I idéntico en proxies de 5–31 bits ⇒ estructural ⇒
+> transfiere a Goldilocks (residual real abierto). **Hueco honesto (2):** escalar
+> más allá de R=3 excede el motor (F4/FGLM); mayor punto resuelto = 9604; R≥4
+> abierto. **Veredicto: primitiva candidata con todos los flancos medidos salvo el
+> escalado del motor y el convenio de capacidad, ambos abiertos y documentados.**
+
 > **Cierre de seguridad 2026-07-05 (FreeLunch sobre la mínima).** El +1 bit/ronda
 > **RESISTE FreeLunch** (2024/347). Como `D_I` es invariante al orden y al modelado,
 > la métrica que hemos reportado (D_I) *es* el coste de FreeLunch; se corre sobre la

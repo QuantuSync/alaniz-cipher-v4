@@ -89,10 +89,25 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
 **Estado final de las afirmaciones (Camino 1):**
 - **Verificado:** ley `D_I=7^(R·m)·m·2^(R-1)` (incl. punto grande 9604); no-trampa
   (solving degree, modelo solo-en-x); independencia de densidad e incidencia
-  (genérico); biyectividad (exhaustiva 31⁴); resistencia a FreeLunch (D_I invariante).
+  (genérico); biyectividad (exhaustiva 31⁴); resistencia a FreeLunch, CheapLunch y
+  resultantes (todas D_I-bound, corridas — C1-freelunch/cheaplunch/resultant);
+  **wide-trail diferencial/lineal** (R*_difflin=2 ≪ algebraico; acoplamiento no
+  degrada — [WIDE_TRAIL.md](WIDE_TRAIL.md)); **transferencia proxy→Goldilocks**
+  parcial (D_I idéntico en 5–31 bits, estructural).
 - **Extrapolado (conjetura respaldada, ω=2):** R\* y coste vs Poseidon2.
-- **Abierto:** escalado a R,m mayores (limitado por F4/FGLM; timeouts reportados);
-  análisis diferencial/lineal (wide-trail); rondas parciales sobre la capa MDS.
+- **Abierto:** escalado a R≥4 / D_I≳10⁵ (límite F4/FGLM del motor; huecos
+  reportados, no evidencia en contra); residual Goldilocks real; convenio de
+  capacidad CICO del esponja; rondas parciales sobre la capa MDS.
+
+## Campaña final (primitiva candidata) — Bloques 1-5
+
+| Bloque | Estado | Evidencia |
+|--------|--------|-----------|
+| 1 — Wide-trail diff/lineal | ✓ | S-box MDP=2⁻⁶¹/MLC=2⁻²⁹ (exhaustivo); acoplamiento no degrada; R*_difflin=2; gobierna el algebraico (12). `experiments/10`, `docs/WIDE_TRAIL.md`. |
+| 2 — Escalar la ley | ⚠ parcial | Mayor punto resuelto = (R=2,m=2)=9604; R≥4 y D_I≳10⁵ = **huecos** (F4/FGLM-bound, 24GB/16h). `docs/CRYPTANALYSIS.md` (C1-scale). |
+| 3 — CheapLunch + resultantes | ✓ | Corridos: CICO-2 > CICO-1 (sin atajo); eliminante = D_I (98). `attacks/A_cheaplunch_resultant.py`. |
+| 4 — Instanciación | ✓ | **Alaniz-AO**: t=8, R=8, x⁷, MDS Cauchy, acoplamiento cadena mínimo, esponja rate/cap 4. `src/crypto/alaniz_ao.py`, `docs/SPEC.md`. ~1.30× Poseidon2 (R1CS). |
+| 5 — Transferencia | ✓ parcial | D_I idéntico en proxies 5–31 bits ⇒ estructural ⇒ transfiere; Goldilocks real abierto. `experiments/11`. |
 
 ---
 

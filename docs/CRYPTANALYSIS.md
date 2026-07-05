@@ -539,3 +539,72 @@ degree suba (t=4: 10→11→12) o baje (t=6 R=3: 7) es secundario: la seguridad 
 32 variables) — se reporta como hueco; su solving degree (12) sí se capturó. Puntos
 mayores requieren más RAM/tiempo. R\* y coste siguen **extrapolados** de la ley
 verificada bajo ω=2.
+
+## C1-scale — Escalar la ley (Bloque 2): límite del motor, hueco honesto
+
+WSL a **24 GB / 16 hilos** (`.wslconfig`). Intento de resolver un punto más allá
+de R≤3:
+
+| punto | modelo | nvars | cuello | resultado |
+|---|---|---|---|---|
+| (R=2,m=2) | a-var / mín. | 16 | FGLM | **9604 resuelto** (35 s) — ya en C1-C |
+| (R=4,m=1) | a-var / x-only | 32 / 16 | **F4** | timeout (>1200 s) |
+| (R=2,m=3) | a-var full | 16 | **FGLM** (~7·10⁵) | timeout (>2000 s) |
+
+**El mayor punto resuelto sigue siendo (R=2,m=2)=9604** (distingue B de base-14 y
+del nulo). R≥4 es **F4-bound** (nº de variables), y D_I≳10⁵ es **FGLM-bound**;
+ambos exceden el motor en este hardware. Nota: a m=1, (R=4) coincide numéricamente
+con base-14 (14⁴/2=19208), así que solo extendería el rango R, no distingue leyes.
+**Estado de la ley:** verificada en R∈{1,2,3}, m∈{1,2,3} y el punto grande 9604;
+R≥4 **abierto** (límite del motor, no evidencia en contra). R\* sigue extrapolado.
+
+## C1-cheaplunch — CheapLunch (2025/2040) corrido (Bloque 3)
+
+CheapLunch fija **más salidas** (CICO-2) para reducir el modelado.
+`attacks/A_cheaplunch_resultant.py`, construcción mínima:
+
+| CICO | R | m | D_I | ley |
+|---|---|---|---|---|
+| CICO-1 | 2 | 1 | 98 | 98 |
+| CICO-2 | 2 | 2 | 9604 | 9604 |
+| CICO-1 | 3 | 1 | 1372 | 1372 |
+| CICO-2 | 3 | 2 | timeout | 941192 |
+
+**Fijar más salidas da D_I MAYOR, nunca menor.** El atacante no puede bajar del
+CICO-1 más barato (m=1); CheapLunch no abre atajo sub-D_I. El coste sigue ligado a
+D_I. (El punto CICO-2 (3,2) grande = hueco.)
+
+## C1-resultant — Resultantes/eliminación (2025/259, 2026/1281) corridas (Bloque 3)
+
+Orden de eliminación de msolve (`-e nvars-1`): el eliminante univariado de un ideal
+0-dim tiene grado = D_I. Verificado:
+
+| R | m | nvars | D_I | grado eliminante | ¿= D_I? |
+|---|---|---|---|---|---|
+| 2 | 1 | 16 | 98 | **98** | **sí** |
+| 3 | 1 | 24 | 1372 | timeout | (hueco: eliminación cara) |
+| 2 | 2 | 16 | 9604 | timeout | (hueco) |
+
+**El grado del eliminante = D_I** (98) donde se resuelve ⇒ el ataque por
+resultantes también es **D_I-bound**, sin atajo. Casos mayores: la eliminación GB
+es cara (huecos reportados).
+
+## transfer — Transferencia proxy → Goldilocks (Bloque 5)
+
+msolve no corre sobre Goldilocks (char > 2³¹). Argumento de transferencia: el
+sistema CICO tiene **idéntica estructura** para todo primo con gcd(7,p−1)=1 (mismo
+exponente, mismo acoplamiento, mismas ecuaciones); solo cambia la característica.
+`experiments/11_transfer_proxies.py` cruza los tres proxies (construcción mínima,
+m=1):
+
+| primo | ~bits | R=2 (D_I, sd) | R=3 (D_I, sd) |
+|---|---|---|---|
+| 31 | 5 | (98, 10) | (1372, 11) |
+| 65371 | 16 | (98, 10) | (1372, 11) |
+| 1073742091 | 31 | (98, 10) | (1372, 11) |
+
+**Idénticos en un rango de 5 a 31 bits de característica** ⇒ D_I (y el solving
+degree) son **característica-independientes (estructurales)** ⇒ la ley transfiere a
+Goldilocks. **Abierto:** correr el sistema real sobre Goldilocks (ningún motor
+llega a char = 2⁶⁴). La transferencia pasa de conjetura a **parcial-verificada**
+(evidencia estructural fuerte; residual Goldilocks abierto).
