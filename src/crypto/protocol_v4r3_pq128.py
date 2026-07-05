@@ -21,82 +21,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from core.complex2d import Complex2D
 from crypto.field_pd import FpdField, make_field
+# Consolidated reference-path helpers (Phase-0 H3 fix lives in sampling.py).
+from crypto.linalg_fp import (matrix_det_fp, matrix_mul_fp, matrix_inverse_fp,
+                              matvec_mul_fp, vec_add_fp, vec_sub_fp)
+from crypto.sampling import (prg_vec, random_fq_element,
+                            random_invertible_matrix_fp)
 
-
-# ─────────────────────────── F_p arithmetic helpers ───────────────────────────
-
-def random_invertible_matrix(p: int, d: int, rng: np.random.Generator) -> list:
-    """Generate a random d×d invertible matrix over F_p. Uses Gauss check."""
-    while True:
-        M = [[int(rng.integers(0, 2**62)) % p for _ in range(d)] for _ in range(d)]
-        # Compute determinant via Gaussian elimination mod p
-        if matrix_det_fp(M, p) != 0:
-            return M
-
-
-def matrix_det_fp(M: list, p: int) -> int:
-    """Determinant of d×d matrix over F_p."""
-    d = len(M)
-    A = [row[:] for row in M]
-    sign = 1
-    for col in range(d):
-        # Find pivot
-        pv = -1
-        for r in range(col, d):
-            if A[r][col] % p != 0:
-                pv = r; break
-        if pv == -1:
-            return 0
-        if pv != col:
-            A[col], A[pv] = A[pv], A[col]
-            sign = -sign
-        inv = pow(A[col][col], p - 2, p)
-        for r in range(col + 1, d):
-            factor = (A[r][col] * inv) % p
-            for c in range(col, d):
-                A[r][c] = (A[r][c] - factor * A[col][c]) % p
-    det = sign
-    for i in range(d):
-        det = (det * A[i][i]) % p
-    return det % p
-
-
-def matvec_mul_fp(M: list, v: list, p: int) -> list:
-    """Matrix-vector product M·v over F_p."""
-    d = len(M)
-    out = []
-    for i in range(d):
-        s = 0
-        for j in range(d):
-            s = (s + M[i][j] * v[j]) % p
-        out.append(s)
-    return out
-
-
-def vec_add_fp(a: list, b: list, p: int) -> list:
-    return [(a[i] + b[i]) % p for i in range(len(a))]
-
-
-def vec_sub_fp(a: list, b: list, p: int) -> list:
-    return [(a[i] - b[i]) % p for i in range(len(a))]
-
-
-# ─────────────────────────── PRG for nonces ───────────────────────────
-
-def prg_vec(nonce: bytes, label: str, idx: int, d: int, p: int) -> list:
-    """F_p^d vector pseudorandom from (nonce, label, idx)."""
-    h = hashlib.shake_256()
-    h.update(nonce)
-    h.update(label.encode())
-    h.update(idx.to_bytes(4, "big"))
-    bits_per = (p - 1).bit_length() + 16
-    bytes_per = (bits_per + 7) // 8
-    out_bytes = h.digest(bytes_per * d)
-    vals = []
-    for i in range(d):
-        chunk = out_bytes[i * bytes_per:(i + 1) * bytes_per]
-        vals.append(int.from_bytes(chunk, "big") % p)
-    return vals
+# Backwards-compatible alias: unbiased invertible-matrix sampler.
+random_invertible_matrix = random_invertible_matrix_fp
 
 
 # ─────────────────────────── Sigma_v3 in field form ───────────────────────────
@@ -187,42 +119,6 @@ def gen_h0_basis(K: Complex2D, d: int, p: int, rng) -> tuple:
     return H0_basis, rho_ve, rho_et
 
 
-def matrix_mul_fp(A: list, B: list, p: int) -> list:
-    """Matrix product A·B over F_p."""
-    d = len(A)
-    C = [[0] * d for _ in range(d)]
-    for i in range(d):
-        for k in range(d):
-            if A[i][k] == 0: continue
-            for j in range(d):
-                C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % p
-    return C
-
-
-def matrix_inverse_fp(M: list, p: int) -> list:
-    """Inverse of d×d matrix over F_p via Gauss-Jordan. None if singular."""
-    d = len(M)
-    A = [row[:] + [1 if i == j else 0 for j in range(d)] for i, row in enumerate(M)]
-    for col in range(d):
-        pv = -1
-        for r in range(col, d):
-            if A[r][col] % p != 0:
-                pv = r; break
-        if pv == -1:
-            raise ValueError("Singular matrix")
-        if pv != col:
-            A[col], A[pv] = A[pv], A[col]
-        inv = pow(A[col][col], p - 2, p)
-        for c in range(2 * d):
-            A[col][c] = (A[col][c] * inv) % p
-        for r in range(d):
-            if r != col and A[r][col] % p != 0:
-                factor = A[r][col] % p
-                for c in range(2 * d):
-                    A[r][c] = (A[r][c] - factor * A[col][c]) % p
-    return [row[d:] for row in A]
-
-
 # ─────────────────────────── Setup & keygen ───────────────────────────
 
 def setup_pq128(K: Complex2D, d: int, p: int, rng=None) -> ParamsPQ128:
@@ -230,12 +126,8 @@ def setup_pq128(K: Complex2D, d: int, p: int, rng=None) -> ParamsPQ128:
     F = make_field(p, d)
     H0_basis, rho_ve, rho_et = gen_h0_basis(K, d, p, rng)
     e = find_secure_exponent(p, d)
-    # L: random non-zero element of F_{p^d}
-    while True:
-        L_int = int(rng.integers(0, 2**62)) % (p ** d)
-        L = F.from_int(L_int)
-        if not F.is_zero(L):
-            break
+    # L: uniform non-zero element of the FULL field F_{p^d} (H3 fix).
+    L = random_fq_element(F, rng, exclude_ints=(0,))
     return ParamsPQ128(K=K, F=F, L=L, exponent=e, d=d, p=p,
                        H0_basis=H0_basis, rho_ve=rho_ve, rho_et=rho_et)
 
@@ -245,14 +137,10 @@ def keygen_pq128(params: ParamsPQ128, rng=None) -> KeyPQ128:
     p, d = params.p, params.d
     F = params.F
     A = {v: random_invertible_matrix(p, d, rng) for v in range(params.K.n)}
-    beta = {}
-    one = F.one()
-    for v in range(params.K.n):
-        while True:
-            b_int = int(rng.integers(0, 2**62)) % (p ** d)
-            b = F.from_int(b_int)
-            if not F.is_zero(b) and not F.equals(b, one):
-                beta[v] = b; break
+    # β_v: uniform over the FULL field F_{p^d}, excluding {0, 1} (H3 fix).
+    # Integer codes: from_int(0) = 0 (zero), from_int(1) = one = (1,0,...,0).
+    beta = {v: random_fq_element(F, rng, exclude_ints=(0, 1))
+            for v in range(params.K.n)}
     B = {e_idx: random_invertible_matrix(p, d, rng) for e_idx in range(params.K.m)}
     C = {t_idx: random_invertible_matrix(p, d, rng) for t_idx in range(params.K.l)}
     return KeyPQ128(A=A, beta=beta, B=B, C=C)

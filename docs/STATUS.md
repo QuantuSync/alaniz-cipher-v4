@@ -83,7 +83,16 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
 | A — Acoplamiento mínimo conserva la ley | ✓ | **Densidad-independiente** (medido, t=4 y t=6): D_I idéntico k=1…full. No-trampa (solving degree mín=10≥full=9>base=7). `experiments/08`. |
 | C — Escalar: punto grande resuelto | ✓ | **(R=2,m=2)=9604 resuelto** (msolve -t 16, 35s) ⇒ ley `7^(Rm)·m·2^(R-1)` **verificada** (descarta base-14 y nulo). Puntos mayores: F4/FGLM-limitados (timeouts reportados). |
 | D — Coste neto + veredicto | ✓ | Mínimo: net 0.87-0.89× baseline, tetra 0.73× Poseidon2. |
-| **Control — ¿haz o genérico?** | ✓ (**GATE: esperando OK**) | **GENÉRICO**: haz/denso/chain/star dan D_I y F4 **idénticos** (octaedro, `experiments/09`). El +1 bit/ronda es del **acoplamiento a la entrada**, no del haz. Haz = inspiración, no mecanismo. **Camino: redactar** el principio general. |
+| **Control — ¿haz o genérico?** | ✓ | **GENÉRICO**: haz/denso/chain/star dan D_I y F4 **idénticos** (octaedro, `experiments/09`). El +1 bit/ronda es del **acoplamiento a la entrada**, no del haz. Haz = inspiración, no mecanismo. |
+| **Cierre — FreeLunch sobre la mínima** | ✓ | **RESISTE**: el coste-driver D_I sigue la nominal `7^(R·m)·m·2^(R-1)` (98/1372/9604), nunca colapsa al baseline; incluso con GB "gratis" (t=6 R=3, sd=7) el FGLM(D_I) es mayor. `attacks/A_freelunch_minimal.py`. R=4 timeout = hueco. |
+
+**Estado final de las afirmaciones (Camino 1):**
+- **Verificado:** ley `D_I=7^(R·m)·m·2^(R-1)` (incl. punto grande 9604); no-trampa
+  (solving degree, modelo solo-en-x); independencia de densidad e incidencia
+  (genérico); biyectividad (exhaustiva 31⁴); resistencia a FreeLunch (D_I invariante).
+- **Extrapolado (conjetura respaldada, ω=2):** R\* y coste vs Poseidon2.
+- **Abierto:** escalado a R,m mayores (limitado por F4/FGLM; timeouts reportados);
+  análisis diferencial/lineal (wide-trail); rondas parciales sobre la capa MDS.
 
 ---
 

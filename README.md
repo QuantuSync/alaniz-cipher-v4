@@ -1,83 +1,97 @@
-# Alaniz Cipher v4
+# Alaniz Cipher — arithmetization-oriented permutation study
 
-A proposal for a multivariate post-quantum public-key encryption scheme based on cellular sheaves over 2-simplicial complexes.
+**Status: reproducible research record (not a product).** This repository documents,
+with reproducible experiments, the design-and-cryptanalysis arc of a symmetric
+arithmetization-oriented (AO) primitive, ending in one positive central result and
+several honest negative results along the way.
 
-> **Status: research proposal.** This is not a production-ready cryptosystem. It is a proposal for academic and technical review, with partial empirical validation. See [docs/STATUS.md](docs/STATUS.md) for current state and [pending_validations/README.md](pending_validations/README.md) for validations still required.
+> Secure-round counts (R\*) and cost figures are **extrapolations** of a *measured*
+> law, under an explicit cost model (ω=2). Nothing is called "secure" without that
+> label. See [docs/STATUS.md](docs/STATUS.md) for per-claim status.
 
-## What this is
+## Central result (verified)
 
-Alaniz Cipher v4 is a candidate post-quantum encryption scheme in the **multivariate** family. The security rests on the difficulty of solving large systems of polynomial equations over finite fields — a problem believed to be hard even for quantum computers (the relevant attack is Faugère's F4/F5 algorithm with Grover-amplified linear algebra).
+In an algebraic SPN over F_p (S-box `x⁷` over Goldilocks `p = 2⁶⁴−2³²+1`, MDS linear
+layer), **coupling the S-boxes at their INPUT with a triangular quadratic term adds
++1 bit of CICO ideal degree per round**:
 
-The novel construction is a **cellular sheaf over a 2-simplicial complex** (tetrahedron, octahedron, etc.), where vertices, edges, and triangles each contribute polynomial constraints — linear, bilinear, and trilinear respectively — entangled through arithmetic in the finite field F_{p^d}.
+```
+D_I(independent baseline)   = 7^(R·m)
+D_I(input coupling)         = 7^(R·m) · m · 2^(R-1)      (m = free branches)
+```
 
-This places Alaniz Cipher in a different mathematical region from lattice-based schemes (Kyber, Dilithium) recommended by NIST, providing algorithmic diversity for critical infrastructure that should not depend on a single mathematical family.
+All measured in a real Gröbner engine (msolve):
 
-## What this is not
+- **Real, not a nominal-degree trap.** The F4 solving degree *rises* (does not
+  collapse), and an x-only model reproduces D_I exactly (auxiliary variables do not
+  inflate it). A resolved large point **(R=2,m=2)=9604** rules out the rivals
+  (base-14 = 19208; null = 2401).
+- **Generic, not sheaf-specific.** Four triangular incidences (sheaf/simplicial,
+  dense, chain, star) give **identical** D_I and F4. The cellular-sheaf structure over
+  the simplicial complex was the *inspiration*, not the mechanism. It restates as an
+  AO design principle: *the non-linear placement of the coupling (S-box input — not
+  the linear layer, not additive after the power) is what buys degree*.
+- **Density-independent.** A single coupling term per round keeps the full gain, so
+  the defended construction is the **minimal** one (1 mult/round): net **0.87–0.89×**
+  the baseline in R1CS constraints, and the tetrahedron **0.73×** Poseidon2.
+- **Resists FreeLunch** (eprint 2024/347): D_I is invariant under the monomial order
+  and the modeling, so the FreeLunch cost (= FGLM(D_I)) follows the nominal curve and
+  does not collapse to the baseline. See
+  [docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md) (C1-freelunch).
 
-- **Not a deployable product.** Years of external cryptanalysis are required before any deployment.
-- **Not a replacement for NIST PQ standards.** Intended as a hybrid-mode complement or a fallback option.
-- **Not formally proven secure.** Like all multivariate schemes, security rests on heuristic structural arguments rather than reduction to a previously-studied hard problem.
+## The arc (negative results preserved)
 
-## Quick start
+1. **Sheaf-based multivariate PKE (v4)** → dropped: encryption needs the secret (H1);
+   the scheme was symmetric, not public-key.
+2. **Entropy collapse in sampling (H3)** → detected and fixed (β/L near-scalar
+   ~62 bits → ~366 bits).
+3. **High-degree σ in one round (AO model)** → broken: A6-CICO solves at cubic degree
+   independent of e; an expensive S-box buys no AO security in a single layer.
+4. **Sheaf structure as a LINEAR layer** → no algebraic advantage (D_I=7^(R·m),
+   independent of branch number); an honest "sheaf diffusion vs MDS" comparison.
+5. **Sheaf structure as NON-LINEARITY (S-box input)** → **the positive result**: the
+   +1 bit/round above, later shown to be generic.
+
+Dated verdicts in [docs/DECISION.md](docs/DECISION.md); full attack log in
+[docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md).
+
+## Reproducing
+
+Needs Python 3 (`pip install -r requirements.txt`) and, for the Gröbner attacks,
+**msolve** on WSL/Linux (`sudo apt install msolve`); see
+[docs/WSL_SETUP.md](docs/WSL_SETUP.md). Fixed seeds ⇒ deterministic results.
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+pytest -q                                     # full suite (green)
 
-# Run end-to-end verification at d=6 (multiple seeds)
-python experiments/reproduce_e2e_d6.py
+# Sheaf-as-linear-layer phase: law D_I=7^(R·m), cost vs Poseidon2
+python experiments/03_mix_branch_number.py
+python experiments/04_spn_cico_attacks.py     # needs msolve (WSL)
+python experiments/05_spn_cost.py
 
-# Compute quantum security parameters
-python experiments/reproduce_quantum_analysis.py
+# Path 1 (input coupling): the central result
+python experiments/06_coupling_grade_gate.py        # add vs input (needs msolve)
+python experiments/08_coupling_density_sweep.py     # density independence
+python experiments/09_coupling_sheaf_vs_generic.py  # sheaf-vs-generic control
+python experiments/07_coupling_cost_verdict.py      # R* and cost (extrapolated, ω=2)
+python attacks/A_freelunch_minimal.py               # FreeLunch on the minimal build
 ```
 
-The simplest possible test:
+msolve-invoking scripts call it as `wsl msolve -f <file> [-g 2] [-t 16]`. Engine
+fidelity notes (CRLF, primes that segfault, syntax) are in
+[docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md).
 
-```python
-import sys; sys.path.insert(0, "src")
-import numpy as np
-from core.complex2d import Complex2D
-from crypto.protocol_v4r3_pq128 import setup_pq128, keygen_pq128, encrypt_pq128
-from crypto.decrypt_v4r3_pq128 import decrypt_pq128
+## Layout
 
-K = Complex2D.tetrahedron()
-rng = np.random.default_rng(42)
-params = setup_pq128(K, d=6, p=257, rng=rng)
-key = keygen_pq128(params, rng=rng)
-
-alpha = [int(rng.integers(0, 100)) for _ in range(6)]
-nonce, ciphertext = encrypt_pq128(params, key, alpha)
-alpha_recovered, _ = decrypt_pq128(params, key, ciphertext, nonce)
-
-assert list(alpha_recovered) == alpha
-print("OK — message recovered correctly")
-```
-
-Or run `python example.py` from the repo root.
-
-## Documentation
-
-| File | Purpose |
-|------|---------|
-| [docs/DESIGN.md](docs/DESIGN.md) | The scheme construction (formal) |
-| [docs/SECURITY.md](docs/SECURITY.md) | Security analysis |
-| [docs/PARAMETERS.md](docs/PARAMETERS.md) | Recommended parameters with justification |
-| [docs/STATUS.md](docs/STATUS.md) | Current state of validation and what is verified |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Open work and priorities |
-| [docs/HISTORY.md](docs/HISTORY.md) | Version history (v1 → v4r3) |
-| [docs/findings/](docs/findings/) | Detailed technical findings |
-
-## Key claims (with status)
-
-1. **The previously-published v3 parameters (d=6, e=17) provide approximately 74 bits of classical security, not 128.** Verified via Hilbert series + Bardet-Faugère analysis. ✓
-2. **Corrected parameters (tetra d=12, e=31) provide ~147 bits of quantum-conservative security.** Verified by computation; empirical validation pending at d=12. ⚠
-3. **The scheme is functional end-to-end at d=6.** Verified in 10 independent seeds. ✓
-4. **Known specific attacks (Beullens, MinRank) do not break the scheme.** Verified empirically. ✓
-5. **The empirical regularity degree of the attack system exceeds the Hilbert prediction by a positive offset.** Verified in 13 instances at d=2,3. ✓
-
-## Reproducing the results
-
-See [experiments/README.md](experiments/README.md) for the full mapping of which script reproduces which table or claim in the documentation.
+- `src/` — reference implementation (field, S-box, mixing layer, coupling, CICO model).
+- `experiments/` — reproducible measurements (diffusion, cost, degree sweeps).
+- `attacks/` — cryptanalysis suite (A6-CICO, FreeLunch, …).
+- `docs/` — `STATUS.md` (per-claim status), `DECISION.md` (verdicts),
+  `CRYPTANALYSIS.md` (attacks), design specs (`SPN_SPEC.md`, `COUPLING_SPEC.md`,
+  `AO_SPEC.md`, `HARDNESS.md`). Earlier-proposal docs (`DESIGN.md`, `SECURITY.md`,
+  `PARAMETERS.md`, `HISTORY.md`, `findings/`) are kept as historical record — read
+  them together with `STATUS.md`, which supersedes their quantitative claims.
+- `tests/` — `pytest`, including exhaustive bijection and law regressions.
 
 ## License
 
@@ -85,14 +99,13 @@ Apache License 2.0. See [LICENSE](LICENSE).
 
 ## Citation
 
-If you reference this work, please cite:
-
-> Alaniz Pintos, L. (2026). *Alaniz Cipher v4: A Sheaf-Based Multivariate Post-Quantum Encryption Scheme.* Preprint. [DOI when assigned]
+> Alaniz Pintos, L. (2026). *Alaniz Cipher: an arithmetization-oriented permutation
+> study.* Preprint. [DOI when assigned]
 
 ## Author and contact
 
-**Lucas Alaniz Pintos**  
-Research AI Engineer — Critical Infrastructure & Quantum Systems  
+**Lucas Alaniz Pintos**
+Research AI Engineer — Critical Infrastructure & Quantum Systems
 INECO (Ingeniería y Economía del Transporte, S.M.E., M.P., S.A.)
 
 - Email: <lucas.alaniz@ineco.com>
@@ -100,10 +113,8 @@ INECO (Ingeniería y Economía del Transporte, S.M.E., M.P., S.A.)
 - LinkedIn: [linkedin.com/in/lualaniz](https://www.linkedin.com/in/lualaniz)
 - ORCID: [0009-0008-5179-2534](https://orcid.org/0009-0008-5179-2534)
 
-## Acknowledgments
-
-This work was conducted as part of research into algorithmic diversity for post-quantum cryptography, with the goal of supporting sovereign technical options for critical infrastructure in the European context.
-
 ## Disclaimer
 
-This is research-grade work. Do not deploy in production. Do not use to protect sensitive data. The cryptographic guarantees described in the documentation are heuristic, contingent on validation work that remains open. See [pending_validations/README.md](pending_validations/README.md).
+Research-grade work. Do not deploy in production. Do not use to protect sensitive
+data. The security statements in the documentation are heuristic and contingent on
+open validation work; see [docs/STATUS.md](docs/STATUS.md).

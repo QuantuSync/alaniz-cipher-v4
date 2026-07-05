@@ -29,9 +29,9 @@ Verificado por log elevado:
   queda pendiente del reinicio.
 - `CBS RebootPending: True` → **hay un reinicio pendiente**.
 
-Nota: `wsl --install` directo (no elevado) FALLA en esta sesión de Claude Code
-porque corre SIN admin. La instalación se hizo vía `Start-Process -Verb RunAs`
-(UAC aceptado por el usuario) con salida a log.
+Nota: `wsl --install` directo (no elevado) FALLA cuando la shell corre SIN admin.
+La instalación se hizo vía `Start-Process -Verb RunAs` (UAC aceptado por el
+usuario) con salida a log.
 
 ### Pasos del usuario para completar (tras este punto)
 

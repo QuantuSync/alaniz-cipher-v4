@@ -125,20 +125,16 @@ def find_irreducible(p: int, d: int):
     Find an irreducible polynomial of degree d over F_p, return its
     coefficients in ASCENDING order [c_0, c_1, ..., c_d] with c_d = 1.
 
-    Strategy:
-      - d ≤ 3, or p ≤ 2^20: use galois.irreducible_poly (fast, well-tested).
-      - Otherwise: use our own Rabin test (galois hangs for big p, d ≥ 4).
-    """
-    if d <= 3 or p < (1 << 20):
-        import galois
-        poly = galois.irreducible_poly(p, d)
-        desc = [int(c) for c in poly.coeffs]
-        while len(desc) < d + 1:
-            desc.insert(0, 0)
-        asc = desc[::-1]
-        return asc
+    Reference path is galois-free: we always use the pure-Python Rabin
+    test (`crypto.irreducible.find_irreducible_rabin`). That routine itself
+    tries `galois.irreducible_poly` only as an optional accelerator for
+    d ≤ 3 and falls back to Rabin when galois is absent, so this function
+    never *requires* galois.
 
-    # Big primes / large degree: galois.irreducible_poly hangs.
+    Any irreducible polynomial of degree d defines the same field F_{p^d}
+    up to isomorphism; the specific choice only needs to be consistent
+    within a run (it is: the field is built once per setup).
+    """
     from crypto.irreducible import find_irreducible_rabin
     return find_irreducible_rabin(p, d)
 

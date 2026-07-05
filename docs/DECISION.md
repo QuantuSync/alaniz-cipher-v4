@@ -265,6 +265,23 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > (C1-A, C1-C). Sigue la lección honesta: timeouts (R=4, R=2/m=3) se reportan como
 > huecos, no como confirmación.
 
+> **Cierre de seguridad 2026-07-05 (FreeLunch sobre la mínima).** El +1 bit/ronda
+> **RESISTE FreeLunch** (2024/347). Como `D_I` es invariante al orden y al modelado,
+> la métrica que hemos reportado (D_I) *es* el coste de FreeLunch; se corre sobre la
+> construcción mínima y `D_I` sigue la nominal `7^(R·m)·m·2^(R-1)` en todos los
+> puntos resueltos (98/1372/9604), sin colapsar al baseline. Caso más fuerte: t=6
+> R=3, GB casi "gratis" (solving degree 7) y aun así `D_I=1372` (4× baseline) ⇒ el
+> FGLM(D_I) es genuinamente mayor incluso con la ventaja completa de FreeLunch.
+> (R=4 timeout = hueco.) Evidencia: [CRYPTANALYSIS.md](CRYPTANALYSIS.md)
+> (C1-freelunch), `attacks/A_freelunch_minimal.py`.
+>
+> **VEREDICTO FINAL: principio de diseño AO verificado + candidato mínimo.** El
+> resultado central publicable es el **principio genérico** (acoplamiento no-lineal a
+> la entrada de la S-box ⇒ +1 bit de grado CICO/ronda, independiente de incidencia,
+> resistente a FreeLunch). La construcción **mínima** que lo instancia es un candidato
+> con coste neto 0.87-0.89× baseline (tetraedro 0.73× Poseidon2), con R\*/coste
+> extrapolados (ω=2) y palancas abiertas (rondas parciales, wide-trail, escalado).
+
 > **Control decisivo 2026-07-05 (¿haz o genérico?).** El +1 bit/ronda es
 > **GENÉRICO**, no de haz: cuatro incidencias triangulares (haz, denso, chain, star)
 > dan **D_I y F4 idénticos** (octaedro, m=1: 98/1372/deg-9; punto grande m=2: haz y

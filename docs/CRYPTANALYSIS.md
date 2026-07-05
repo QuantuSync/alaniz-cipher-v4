@@ -506,3 +506,36 @@ Matiz honesto emergente (ortogonal al control): a m≥2 el factor depende de cu�
 de 2 ramas libres da 4802 (=7⁴·2) en vez de 9604 (=7⁴·4); haz y chain coinciden en
 ese 4802. La ley `m·2^(R-1)` supone acoplar todas las ramas de tasa (restricción de
 diseño barata), no altera el veredicto genérico.
+
+## C1-freelunch — FreeLunch sobre la construcción MÍNIMA (cierre de seguridad)
+
+FreeLunch (eprint 2024/347) no reduce el nº de soluciones: hace la base de Gröbner
+DRL "gratis" (salta el F4) y deja el coste en el **FGLM ~ D_I^ω**. `D_I` es
+**invariante al orden monomial y al modelado** (verificado: modelos solo-en-x y con
+variables `a` dan el mismo D_I) ⇒ nuestra métrica de seguridad **siempre ha sido la
+de FreeLunch** (D_I), no un D_reg inflado; no hay brecha nominal-vs-efectivo que
+explotar. Se corre aquí sobre la construcción **mínima** (1 término/ronda), no
+probada antes. `attacks/A_freelunch_minimal.py` (msolve `-t 16`, m=1):
+
+| t | R | baseline D_I / sd | mínimo-input D_I / sd | nominal `7^R·2^(R-1)` | ¿sigue? |
+|---|---|---|---|---|---|
+| 4 | 2 | 49 / 7 | 98 / 10 | 98 | **sí** |
+| 4 | 3 | 343 / 9 | 1372 / 11 | 1372 | **sí** |
+| 4 | 4 | 2401 / 9 | **timeout** / 12 | 19208 | D_I timeout (sd=12) |
+| 6 | 2 | 49 / 7 | 98 / 10 | 98 | **sí** |
+| 6 | 3 | 343 / 9 | 1372 / **7** | 1372 | **sí** |
+
+**Veredicto: el +1 bit/ronda RESISTE FreeLunch.** El coste-driver `D_I` sigue la
+curva nominal en todos los puntos resueltos (98, 1372 en t=4 y t=6; más el punto
+grande (R=2,m=2)=9604 de C1-C), estrictamente por encima del baseline (49, 343);
+**nunca colapsa** a `7^(R·m)`. El caso **t=6 R=3 es el más fuerte**: el solving
+degree cae a **7** (la GB es casi "gratis" — el escenario ideal de FreeLunch) y
+**aun así** `D_I = 1372` (4× baseline) ⇒ incluso concediendo al atacante la ventaja
+completa de FreeLunch, el coste FGLM(D_I) es genuinamente mayor. Que el solving
+degree suba (t=4: 10→11→12) o baje (t=6 R=3: 7) es secundario: la seguridad vive en
+`D_I`, invariante y verificado.
+
+**Huecos (no confirmación):** (R=4,m=1) tuvo timeout en el FGLM (~19208 soluciones,
+32 variables) — se reporta como hueco; su solving degree (12) sí se capturó. Puntos
+mayores requieren más RAM/tiempo. R\* y coste siguen **extrapolados** de la ley
+verificada bajo ω=2.

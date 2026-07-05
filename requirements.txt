@@ -1,2 +1,18 @@
+# Reference (pq128) path dependencies — galois-free.
 numpy>=1.24
-galois>=0.3.0
+sympy>=1.12
+pytest>=7.0
+
+# OPTIONAL: only the deprecated galois-based stack (src/crypto/sigma.py,
+# src/crypto/protocol_v4r3.py, src/core/sheaf2d.py) and a small-degree
+# irreducible-poly accelerator use `galois`. The reference path does NOT
+# require it. Uncomment if you need the old stack:
+# galois>=0.3.0
+
+# RECOMMENDED for AO cryptanalysis at scale (Phase 1): fast F_p linear algebra
+# (Macaulay-matrix RREF for solving-degree / D_reg) + univariate resultants.
+# Ships native wheels (incl. Windows). Verify with `make algebra-check`.
+python-flint>=0.9.0
+# A full Groebner engine (Sage / msolve / Magma / Singular) is NOT pip-installable
+# here (no WSL/admin on the Windows host). Analyses needing monomial-order GB are
+# marked PENDING until such a backend is available.
