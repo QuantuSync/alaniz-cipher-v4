@@ -643,3 +643,45 @@ completa** (98=7²·2; 1029=7³·3) en el modelo real del esponja, ≥ baseline 
 (incluso sin el acoplamiento) y cumple 128 en colisión. R*_alg(m=4)=6 ⇒ R=8 =
 6 + margen. La colisión genérica queda exactamente en el target (128); para margen,
 subir capacidad.
+
+## hades — Rondas parciales (full-partial-full): la ley del grado y el coste
+
+Palanca de coste de Poseidon2: sustituir rondas completas por **parciales** (S-box
+en 1 carril, no en los t; la MDS difunde igual). Alaniz-AO puede hacerlo (capa
+MDS). `src/crypto/alaniz_hades.py`: R_f/2 completas + R_p parciales (S-box+
+acoplamiento en el carril t−1) + R_f/2 completas. Biyectiva (exhaustivo 31⁴).
+
+**Ley del grado con rondas parciales (VERIFICADO a m=1, `experiments/13`):**
+
+| R_f | R_p | R_total | D_I | ratio/parcial |
+|---|---|---|---|---|
+| 2 | 0 | 2 | 98 = 7²·2 | — |
+| 2 | 1 | 3 | 1372 = 7³·2² | **×14** |
+| 2 | 2 | 4 | timeout (=19208) | (hueco) |
+
+> **Una ronda PARCIAL multiplica D_I por ×14 — igual que una completa.** `D_I`
+> depende del **nº total de rondas R_total**, no del reparto full/parcial: el único
+> carril con S-box difunde por la MDS a todo el estado y hace crecer el grado ×7
+> (más ×2 del acoplamiento) por ronda. El solving degree **crece** (9→16), no
+> colapsa ⇒ sigue D_I-bound (FreeLunch/CheapLunch no se benefician).
+
+**Huecos honestos:** (i) a m=2 (esponja) tanto D_I como el solving degree de las
+config. con parciales hacen **timeout** (motor); la generalización de "parcial =
+completa" a m>1 se apoya en el argumento de difusión MDS, no en medida directa.
+(ii) La lección Poseidon: las rondas parciales pueden habilitar **ataques
+dedicados** que D_I no captura ⇒ hace falta un mínimo de rondas completas R_f; el
+**R_f mínimo seguro no está derivado aquí** (abierto).
+
+**Coste (`experiments/14`, R_total=8 = mismo D_I que full R=8):**
+
+| R_f | R_p | S-boxes | R1CS | vs full | vs Poseidon2 |
+|---|---|---|---|---|---|
+| 2 | 6 | 22 | 106 | 0.35× | **0.45×** |
+| 4 | 4 | 36 | 172 | 0.57× | **0.74×** |
+| 6 | 2 | 50 | 238 | 0.78× | 1.02× |
+| 8 | 0 (full) | 64 | 304 | 1.00× | 1.30× |
+
+Las rondas parciales bajan Alaniz-AO de **1.30× a 0.74× Poseidon2** (reparto
+moderado R_f=4) — **por debajo de 1×**. Un R_f=6 conservador da paridad (1.02×). El
+R_f mínimo seguro es el único parámetro abierto; ambos extremos acotan una
+primitiva competitiva.

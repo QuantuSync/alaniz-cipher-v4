@@ -68,6 +68,25 @@ Poseidon2** (234). El acoplamiento a la entrada aporta el +1 bit/ronda verificad
 +6 mults/ronda; las **rondas parciales** (habilitadas por la capa MDS, aún sin
 explotar) son la palanca para bajar de aquí.
 
+## 4b. Variante HADES (rondas parciales) — coste bajo Poseidon2
+
+`src/crypto/alaniz_hades.py`. Estructura full-partial-full: R_f/2 rondas completas
++ R_p parciales (S-box+acoplamiento en el carril t−1) + R_f/2 completas, misma capa
+MDS. **Ley verificada (m=1): una ronda parcial multiplica D_I por ×14, igual que
+una completa** ⇒ D_I depende de R_total, no del reparto (ver
+[CRYPTANALYSIS.md](CRYPTANALYSIS.md#hades)). Con R_total=8 (mismo D_I que el full):
+
+| reparto (R_f, R_p) | S-boxes | R1CS | vs Poseidon2 |
+|---|---|---|---|
+| (4, 4) — recomendado moderado | 36 | 172 | **0.74×** |
+| (6, 2) — conservador | 50 | 238 | 1.02× |
+| (2, 6) — agresivo | 22 | 106 | 0.45× |
+
+**Recomendado: R_f=4, R_p=4 ⇒ 0.74× Poseidon2** (bajo 1×). **Abierto:** el R_f
+mínimo seguro frente a ataques dedicados de rondas parciales (lección Poseidon) no
+está derivado; R_f=4 es una elección moderada, R_f=6 conservadora. La confirmación
+directa de "parcial=completa" a m>1 es hueco de motor (timeout).
+
 ## 5. STATUS
 
 | afirmación | estado |
@@ -77,6 +96,7 @@ explotar) son la palanca para bajar de aquí.
 | Ley D_I, no-trampa, resistencia FreeLunch/CheapLunch/resultantes | **verificado** (R≤3 + punto grande 9604; huecos R≥4 reportados) |
 | R*_alg / R\* / coste | **extrapolado** (ω=2, ley verificada) |
 | Convenio de capacidad (m_efectivo=4; R=8 ⇒ ≥179 bits preimagen, 128 colisión) | **CERRADO** (derivado + modelo real medido a R=1) |
+| Rondas parciales: parcial=completa para D_I (m=1); coste 0.74× Poseidon2 (R_f=4) | **verificado (m=1) / abierto** (R_f mínimo seguro; m>1 directo = hueco motor) |
 | Wide-trail (diferencial/lineal) | **verificado** (cotas S-box; método estándar) |
 
 Reproducir: `python -c "import sys;sys.path.insert(0,'src');from crypto.alaniz_ao import sponge_hash;print(sponge_hash([1,2,3,4,5]))"` y `pytest -q`.

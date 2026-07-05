@@ -52,9 +52,13 @@ All measured in a real Gröbner engine (msolve):
 A concrete permutation and sponge hash — **Alaniz-AO** (t=8, R=8, x⁷ over
 Goldilocks, Cauchy-MDS layer, minimal chain input-coupling, rate/capacity 4) — is
 specified in [docs/SPEC.md](docs/SPEC.md) and implemented in
-`src/crypto/alaniz_ao.py` (~1.30× Poseidon2 in R1CS). Round count and cost are
-extrapolated from the verified law under ω=2; the binding CICO capacity convention
-is documented as open.
+`src/crypto/alaniz_ao.py`. The sponge capacity flank is closed (effective m=4;
+R=8 gives ≥179-bit preimage, 128-bit collision). Its **HADES (full-partial-full)
+variant** (`src/crypto/alaniz_hades.py`) uses partial rounds — verified (at m=1) to
+be as algebraically effective as full rounds for the ideal degree — to drop the
+cost from ~1.30× to **0.74× Poseidon2** in R1CS (moderate split R_f=4). Round
+counts and cost are extrapolated under ω=2; the minimal secure full-round count is
+documented as open.
 
 ```python
 import sys; sys.path.insert(0, "src")

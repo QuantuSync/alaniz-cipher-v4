@@ -110,6 +110,7 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
 | 4 — Instanciación | ✓ | **Alaniz-AO**: t=8, R=8, x⁷, MDS Cauchy, acoplamiento cadena mínimo, esponja rate/cap 4. `src/crypto/alaniz_ao.py`, `docs/SPEC.md`. ~1.30× Poseidon2 (R1CS). |
 | 5 — Transferencia | ✓ parcial | D_I idéntico en proxies 5–31 bits ⇒ estructural ⇒ transfiere; Goldilocks real abierto. `experiments/11`. |
 | **Capacidad del esponja** | ✓ (**CERRADO**) | m_efectivo=4 (derivado + modelo real medido: chain alcanza la ley, 98/1029 a R=1). R=8 ⇒ **preimagen ≥179 bits, colisión 128** (ω=2). `experiments/12`, [CRYPTANALYSIS.md](CRYPTANALYSIS.md#sponge-cico). |
+| **Rondas parciales (HADES)** | ✓ (m=1) / abierto | **Parcial = completa para D_I** (×14/ronda, m=1 verificado; D_I depende de R_total). Coste **0.74× Poseidon2** (R_f=4). `src/crypto/alaniz_hades.py`, `experiments/13,14`. **Abierto:** R_f mínimo seguro (ataques dedicados); confirmación m>1 = hueco motor. |
 
 ---
 
