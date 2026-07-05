@@ -30,8 +30,13 @@ GOLDILOCKS_P_MINUS_1_FACTORIZATION = ((2, 32), (3, 1), (5, 1), (17, 1), (257, 1)
 # Goldilocks-like proxy primes for msolve (char < 2^31): 3·5 | p-1, 7 ∤ p-1,
 # hence min bijective exponent = 7, same as Goldilocks. Values verified by
 # tests/test_spn.py::test_proxy_primes_mimic_goldilocks.
+#
+# msolve caveat (learned empirically, see docs/CRYPTANALYSIS.md "Notas de
+# fidelidad"): msolve SEGFAULTS on some primes just above 2^16 (e.g. 65551).
+# The 16-bit tier therefore uses the largest Goldilocks-like prime BELOW 2^16,
+# which msolve handles correctly.
 PROXY_PRIME_TINY = 31            # p-1 = 2·3·5; exhaustive bijectivity tests
-PROXY_PRIME_16 = 65551           # smallest such prime >= 2^16
+PROXY_PRIME_16 = 65371           # largest Goldilocks-like prime < 2^16 (msolve-safe)
 PROXY_PRIME_30 = 1073742091      # smallest such prime >= 2^30
 PROXY_PRIMES = (PROXY_PRIME_TINY, PROXY_PRIME_16, PROXY_PRIME_30)
 

@@ -1,0 +1,246 @@
+# DECISION — Track técnico y de publicación
+
+**Fecha:** 2026-07-05
+**Estado:** confirmado (Fase 0).
+**Decisor:** L. Alaniz Pintos.
+
+Este memo fija el track de trabajo y el reparto público/secreto que gobierna toda
+decisión de diseño posterior. Cualquier cambio requiere un nuevo memo fechado.
+
+## Contexto
+
+Dos restricciones no negociables gobiernan el proyecto:
+
+1. **Restricción estructural (ACTION_PLAN §0).** La σ de Alaniz es de grado alto
+   (e). El mapa público compuesto α→c tendría grado 3e, impublicable. Por tanto
+   **una PKE multivariante estándar con esta σ no es viable.**
+
+2. **Realidad del código (hallazgo H1, Fase 0).** La implementación de referencia
+   (`encrypt_pq128`) necesita `A`, `B`, `C` y `β` para cifrar (β entra vía
+   `sigma_v3`). Es decir, **cifrar requiere el secreto**. Hoy el esquema es de
+   **clave simétrica**, no de clave pública. Ninguna afirmación de "clave pública"
+   es cierta respecto al código.
+
+## Decisión
+
+- **Track técnico objetivo: A — KEM / primitiva simétrica sobre NL-SMIP.**
+  Se asume clave compartida `key = (A, B, C, β)`. La cohomología de haces sobre el
+  2-complejo es la estructura del problema duro (ver `HARDNESS.md`). Una eventual
+  asimetría tipo KEM se diseñará y validará en Fase 1, no se da por supuesta.
+
+- **Track de publicación garantizado: B — paper de criptoanálisis / espacio de
+  diseño.** El arco v1→Langa→v4 (construcciones, ataques, lo que sobrevive y por
+  qué) se documenta con el mismo trabajo de Fase 1. Los resultados negativos
+  honestos también se publican.
+
+- **C — PKE novedosa: descartado**, salvo que en Fase 1 aparezca una asimetría
+  genuinamente nueva y validada.
+
+## Reparto público / secreto (confirmado)
+
+| Elemento | Clasificación | Razón |
+|---|---|---|
+| K, p, d, e, L, H₀, PRG/domain-sep | **Público** | Parámetros de setup; no dependen de la clave. |
+| nonce, ciphertext c | **Público** | Se transmiten. |
+| A_v, B_e, C_t | **Secreto (parte de la clave compartida)** | Necesarias para cifrar y descifrar; se tratan como secretas (simétrico puro). Su estatus se reevaluará solo si Fase 1 (A4 MinRank, A5 recuperación de β) muestra que son recuperables o inertes. |
+| β_v | **Secreto (parte de la clave compartida)** | Trapdoor de σ; necesario para cifrar y descifrar. |
+
+> Nota: la clasificación de A,B,C como secretas es la formulación **más honesta y
+> conservadora** del problema duro. No cierra la puerta al Track A: si Fase 1
+> demuestra que publicar A,B,C no reduce la dureza, podrá revisarse aquí con un
+> memo nuevo.
+
+## Consecuencias inmediatas (Fase 0)
+
+1. Toda la documentación deja de afirmar "clave pública". `DESIGN.md`,
+   `SECURITY.md` y `findings/CSI_AND_INDCPA.md` se reescriben en clave
+   simétrica/KEM (pendiente, ligado a la unificación de código).
+2. El problema duro se reenuncia sobre datos realmente públicos en `HARDNESS.md`
+   como **NL-SMIP**, con β (y A,B,C) como incógnitas del atacante.
+3. Las afirmaciones cuantitativas de seguridad (74 / 147 / … bits) quedan
+   **suspendidas** hasta reformularse sobre el sistema que realmente ve el
+   atacante y revalidarse. Se re-etiquetan en `STATUS.md`.
+
+## Expectativa
+
+Gane o pierda la construcción, la contribución honesta sale de: (a) el problema
+duro bien planteado (NL-SMIP), (b) el criptoanálisis propio (Fase 1), (c) un
+KEM/simétrico bien analizado si sobrevive. Ese es el objetivo de este track.
+
+---
+
+## Recomendación tras el spike de reconocimiento (Paso 3, Fase 0)
+
+**Fecha:** 2026-07-05. **Evidencia:** [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (A5, A6),
+esquema ya corregido post-H3. Escala pequeña (d∈{2,3,4}), semillas fijas.
+
+### Veredicto: **GO condicional a Track A — pero SOLO como primitiva SIMÉTRICA.**
+
+Nada rompió el esquema corregido a pequeña escala, así que no hay NO-GO. Pero el
+spike acota con fuerza lo que Track A puede ser:
+
+1. **β NO es un trapdoor independiente (A5a, verificado).** Dado (A,B,C) y un texto
+   claro conocido, β se recupera con **una inversión de campo por vértice**. Por
+   tanto:
+   - **No existe (todavía) una asimetría KEM viable.** No se puede publicar (A,B,C)
+     y guardar β: β caería. La parte "KEM" de Track A **no está soportada** por la
+     evidencia; el objetivo realista hoy es **simétrico puro**.
+   - La narrativa de seguridad debe reescribirse: la dureza **no** está en invertir
+     σ vía β, sino en recuperar **(A,B,C)**. Ese es el verdadero problema
+     (NL-SMIP-KR) y el objetivo de Fase 1 (A4 MinRank / estructural).
+
+2. **Evidencia de dureza a pequeña escala, pero cifras aún suspendidas (A6, parcial).**
+   Los gaps D_reg empírico − Hilbert son **positivos** (+5 en d=2, +3 en d=3) y el
+   caso d=2 reproduce exactamente la tabla histórica. Es señal favorable en el peor
+   caso (nonce fijo), pero **solo** en d∈{2,3}; d≥4 queda pendiente (Sage/Magma).
+   **Las cifras 74/126/133/147 siguen suspendidas.**
+
+3. **σ no necesita rediseño por ahora.** No se observó colapso ni distinguisher en
+   el esquema corregido a esta escala. El fallo grave (H3) era de **muestreo**, ya
+   corregido. Un rediseño de σ solo se justificaría si Fase 1 lo exige.
+
+### Acciones que habilita esta recomendación
+
+- Reescribir `DESIGN.md`/`SECURITY.md`/`CSI_AND_INDCPA.md` al modelo **simétrico**,
+  y corregir la narrativa "β = trapdoor" → "la dureza está en (A,B,C)".
+- Fase 1 se enfoca en **recuperar (A,B,C)**: A4 (MinRank sobre B_e, C_t), A2
+  (interpolación con nonce fresco vs. reutilizado), A7 (distinguisher). A6 a escala
+  (d≥4) con Sage antes de cualquier cifra de bits.
+- **Prohibido** afirmar KEM/clave pública o cualquier número de bits hasta que la
+  evidencia lo respalde.
+
+### Qué invalidaría este GO (disparadores de NO-GO / rediseño)
+
+- Que A4 recupere (A,B,C) por debajo de la seguridad afirmada → rediseño del
+  acoplamiento.
+- Que A2 con nonce reutilizado recupere estructura de clave de forma barata →
+  el esquema depende críticamente de nonce fresco (documentar o rediseñar).
+- Que A6 a escala (d≥4) muestre gap ≤ 0 o D_reg muy por debajo de lo extrapolado →
+  enterrar las cifras y rehacer parámetros.
+
+---
+
+## Veredicto tras el reencuadre AO + suite CICO (Fase 1)
+
+**Fecha:** 2026-07-05. **Evidencia:** [CRYPTANALYSIS.md](CRYPTANALYSIS.md)
+(A6-CICO, A2), [AO_SPEC.md](AO_SPEC.md), coste en
+`experiments/02_ao_cost_estimate.py`. Backend: python-flint (Sage/msolve
+bloqueados, ver STATUS).
+
+### Veredicto: **NO-GO como primitiva AO → PIVOTAR a Track B (paper de criptoanálisis).**
+
+Se cumplen **dos** disparadores de NO-GO simultáneamente:
+
+1. **Roto en una ronda (más barato que FreeLunch).** A6-CICO (verificado,
+   d∈{2,3,4,6}): el modelo AO hace la permutación **pública**, y con una sola
+   ronda el atacante invierte la σ pública en las salidas fijadas y resuelve un
+   sistema **cúbico** (solving degree **4–5**, independiente de e). El bound de
+   grado-3e (17–33) **no se paga**. La S-box de grado alto —el corazón del
+   diseño— **no aporta ninguna seguridad CICO en una ronda**. Ni siquiera hace
+   falta FreeLunch/CheapLunch/resultantes: caen por inversión directa.
+
+2. **Coste AO no competitivo.** Una ronda ya cuesta ~9.8k mult. F_p (~42×
+   Poseidon2 en d=12,e=31). Como una ronda es insegura, una versión segura
+   necesitaría muchas rondas → **~250–420× Poseidon2** (6–10 rondas). La tensión
+   central (e alto = caro) se agrava: aquí e es **caro e inútil** para CICO en
+   una ronda.
+
+### Consecuencia: Track B (paper de criptoanálisis / espacio de diseño)
+
+Contenido honesto y publicable ya disponible, con scripts reproducibles:
+- **H1** — no es clave pública (cifrar necesita el secreto).
+- **H3** — colapso de entropía tipo Langa (β casi-escalar, ~62 bits), detectado y
+  corregido por nosotros antes de cualquier revisor.
+- **A5a** — β no es un trapdoor: cae con una inversión de campo dado (A,B,C).
+- **A6-CICO** — el hallazgo central: acoplamiento por haz + S-box de grado alto en
+  **una ronda** no da seguridad CICO; el solving degree colapsa a cúbico ⊥ de e.
+- **A2** — la seguridad descansa por completo en la frescura del nonce.
+- **Coste** — cuantificación de por qué el diseño es no competitivo como AO.
+
+Narrativa: el arco v1 → ataque Langa → v4 → reencuadre AO como estudio del
+espacio de diseño, con la lección de que **crecer el grado algebraico con una
+S-box cara en una sola capa no compra seguridad de aritmetización**.
+
+### Dirección futura (abierta, NO una afirmación)
+
+Un objeto AO genuino requeriría: (a) **múltiples rondas**, (b) S-box **biyectiva**
+(la potencia pura `π_e`, no la σ actual no inyectiva), (c) parámetros públicos, y
+entonces re-analizar con FreeLunch/CheapLunch/resultantes. Pero la tensión de
+coste (e alto) es un **obstáculo fundamental** a la competitividad. Se registra
+como problema abierto, sin ninguna cifra de seguridad asociada.
+
+### Estado de las cifras de seguridad
+
+**Definitivamente enterradas** en el modelo AO (74/126/133/147): A6-CICO muestra
+que el coste real del atacante es un Gröbner cúbico (grado 4–5), no grado-3e.
+Cualquier número futuro exige un diseño nuevo (multi-ronda) y su propia medición.
+
+---
+
+## Veredicto Fase 2 — SPN de haz vs Poseidon2 (Paso 4)
+
+**Fecha:** 2026-07-05. **Evidencia:** [SPN_SPEC.md](SPN_SPEC.md),
+[CRYPTANALYSIS.md](CRYPTANALYSIS.md#fase-2) (S1-CICO, S2-tind, ley `D_I=7^(R·m)`
+verificada en **msolve real**), coste en `experiments/05_spn_cost.py`. Motor
+Gröbner desbloqueado (msolve/WSL). Escala pequeña (proxies Goldilocks-like),
+semillas fijas.
+
+### Veredicto: **Track B — PAPER COMPARATIVO HONESTO** ("difusión por haz vs MDS").
+
+El rediseño multi-ronda cumple la lección (grado por composición, no por S-box
+cara): **nada lo rompe barato** — la seguridad CICO crece limpiamente como
+`D_I=7^(R·m)`, sin colapso. Es un objeto AO **sano**, a diferencia del anterior.
+Pero la pregunta de investigación —¿difunde el haz tan bien como MDS a coste
+comparable?— se responde **NO en el eje que importa**, y por una razón precisa y
+publicable:
+
+1. **La estructura de haz no compra seguridad algebraica (S2-tind, verificado).**
+   A igual (R, capacidad), el grado del ideal D_I y el perfil de grado F4 son
+   **idénticos** para la capa de haz (t=6, rama 6, sub-MDS) y el control MDS
+   (t=4, rama 5). Los ceros de no-adyacencia **no abren atajo**. Disparador
+   cumplido: *"difunde igual/peor sin ventaja"* → el nº de rama del haz es
+   **irrelevante** para FreeLunch/CheapLunch/resultantes. R\* es t-independiente.
+
+2. **El déficit de rama no cuesta rondas algebraicas, pero sí estorba la
+   optimización de coste.** R\*(κ=2)=12 rondas completas para ambos t. El coste
+   R1CS de una capa lineal (densa o MDS) es **cero** (solo cuentan S-boxes), así
+   que el octaedro a 12 rondas ≈ **1.23× Poseidon2** en restricciones (288 vs
+   234) — dentro de 2×. **Pero** la palanca real de coste de Poseidon2 son las
+   **rondas parciales** (1 S-box/ronda), que requieren una capa **MDS** para el
+   argumento wide-trail. La capa de haz **no es MDS** (rama 6<7 en t=6), lo que
+   **dificulta justificar rondas parciales** — precisamente la optimización que
+   haría competitivo el diseño.
+
+3. **En evaluación nativa/MPC/FHE la capa densa es estrictamente más cara.** El
+   haz cuesta ~nnz(M) mults/ronda (30 en t=6) frente a la M4 de Poseidon2
+   (~8 sumas + doblados, ~0 mults genéricas): ~648 vs. mucho menos por
+   permutación. La estructura geométrica y el coste AO están **en tensión**.
+
+### Contribución publicable (honesta, con scripts reproducibles)
+
+Narrativa: *"Difusión estructurada por haz — casi-óptima (déficit de exactamente
+1 rama vs MDS) pero sin ventaja algebraica y en tensión con el coste de
+aritmetización."* Resultados propios:
+- **Ley `D_I = 7^(R·m)`** medida en motor Gröbner real (msolve), R∈{1,2,3}.
+- **Independencia de t / nº de rama** del coste algebraico CICO (S2-tind): un
+  resultado limpio y algo contraintuitivo (la geometría de la mezcla no ayuda al
+  atacante algebraico; solo importa al wide-trail estadístico).
+- **Tensión estructura-coste**: near-MDS impide rondas parciales; capa densa cara
+  en nativo. Explica *por qué* una capa lineal "bonita" geométricamente no es la
+  palanca correcta en AO.
+- Arco completo v1 → Langa → v4 (1 ronda, roto) → **SPN de haz (sano pero no
+  competitivo)**, con la lección de diseño AO destilada.
+
+### Qué reabriría Track A (candidato real) — disparadores NO cumplidos hoy
+
+- Que una **capa de haz MDS** (p.ej. otro complejo con 1-esqueleto completo y
+  pesos Cauchy-like) permita **rondas parciales** y baje R1CS ≤ ~1.5× Poseidon2
+  manteniendo la ley `D_I=7^(R·m)`. Abierto.
+- Que la estructura de haz habilite un argumento de seguridad **no** capturado por
+  D_I (p.ej. contra un ataque futuro) que MDS no dé. No observado.
+
+### Cifras (estado)
+
+`D_I=7^(R·m)` **verificada** (R≤3). **R\* extrapolado (conjetura respaldada)**:
+κ=2 ⇒ **R\*=12** rondas, t-independiente, bajo modelo de coste ω=2 explícito.
+Ninguna cifra de bits se declara "segura" sin ese etiquetado.

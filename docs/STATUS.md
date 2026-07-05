@@ -66,8 +66,8 @@ La fila "Sage/msolve BLOQUEADO" de Fase 1 queda **superada**.
 |------|--------|-----------|
 | 2a — Cuerpo + S-box | ✓ | **Goldilocks p=2⁶⁴−2³²+1, d=7 mínimo biyectivo** (verificado; coincide con Plonky2). Proxies msolve 31/65551/1073742091 con idéntica estructura de exponente. `src/crypto/spn_field.py`, tests en `tests/test_spn.py`. Spec: `docs/SPN_SPEC.md` §1-3. |
 | 2b — Capa de mezcla + mini-gate MDS | ✓ (**GATE: esperando confirmación**) | Matriz tipo-haz pública (patrón Laplaciano de haz) en `src/crypto/spn_mix.py`. Rama exacta (5 semillas, 2 cuerpos): **tetra t=4: 5/5 = MDS**; doble-tetra t=5: 5/6; octaedro t=6: 6/7. M² densa en los 3. `experiments/03_mix_branch_number.py`; resultados pinneados en tests. `pytest -q` verde (32). |
-| 3 — SPN completa + suite de ataques (FreeLunch/CheapLunch/resultantes, msolve) | ⏸ | **Gateado**: no arranca sin OK del gate 2b. |
-| 4 — Coste vs Poseidon2 + veredicto | ⏸ | Gateado tras Paso 3. |
+| 3 — SPN completa + suite de ataques (FreeLunch/CheapLunch/resultantes, msolve) | ✓ | Permutación x⁷ biyectiva (`src/crypto/spn_permutation.py`); CICO estilo FreeLunch (`src/crypto/spn_cico.py`). **Ley verificada en msolve real** `D_I=7^(R·m)` (R∈{1,2,3}, t∈{4,6}); **D_I independiente de t/nº de rama** (S2-tind: t=4 MDS y t=6 haz idénticos, grado F4 máx 14). `experiments/04_spn_cico_attacks.py`. Detalle en [CRYPTANALYSIS.md](CRYPTANALYSIS.md#fase-2). |
+| 4 — Coste vs Poseidon2 + veredicto | ✓ (**GATE: esperando OK**) | R\* extrapolado (ω=2): κ=2⇒**12 rondas**, t-independiente. R1CS octaedro ~1.23× Poseidon2; capa densa cara en nativo; near-MDS impide rondas parciales. `experiments/05_spn_cost.py`. **Veredicto: Track B (paper comparativo "haz vs MDS")**; ver [DECISION.md](DECISION.md#veredicto-fase-2). |
 
 ---
 

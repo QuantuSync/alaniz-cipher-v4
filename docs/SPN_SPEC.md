@@ -125,7 +125,24 @@ Lecturas:
 | d=7 mínimo biyectivo en Goldilocks; proxies replican la estructura | **verificado** (tests) |
 | Haz-K₄ (t=4) es MDS; Poseidon2 M4 es MDS; rama exacta t=5,6 = cota−1 | **verificado** (experimento + tests pinneados, 5 semillas, 2 cuerpos) |
 | Coste de aplicación de M (haz denso ~t² mults vs M4 8 sumas) | **parcial** (nnz medido; conteo fino de restricciones → Paso 4) |
-| Transferencia proxy → Goldilocks del solving degree | **conjetura** (a medir en Paso 3) |
-| Nº de rondas seguras frente a FreeLunch/CheapLunch/resultantes | **abierto** (Paso 3, gateado) |
+| Transferencia proxy → Goldilocks del solving degree | **parcial→verificado** (ley D_I medida en proxies; ver §7) |
+| Nº de rondas seguras frente a FreeLunch/CheapLunch/resultantes | **verificado la ley; R\* extrapolado** (§7) |
 
 Reproducir: `python experiments/03_mix_branch_number.py` y `pytest -q`.
+
+## 7. SPN completa y suite de ataques CICO (Paso 3, VERIFICADO)
+
+`src/crypto/spn_permutation.py`: ronda `R_r(x) = M·SB(x) + rc^(r)`, SB = x⁷ en las
+t posiciones (SPN completo; rondas parciales tipo Poseidon2 = optimización
+diferida, anotada). Biyectiva; inversa exacta (tests). CICO modelado con
+variables intermedias estilo FreeLunch en `src/crypto/spn_cico.py`, resuelto en
+**msolve real** (`experiments/04_spn_cico_attacks.py`).
+
+**Ley verificada (R∈{1,2,3}, t∈{4,6}, varias capacidades):**
+`D_I = 7^(R·m)`, m = ramas libres. **D_I es independiente de t y del nº de rama**
+(t=4 MDS y t=6 haz dan D_I y perfil de grado F4 idénticos a igual R,m). El déficit
+de rama del haz cuesta **0 rondas** frente a FreeLunch/CheapLunch/resultantes.
+Detalle completo y tablas en [CRYPTANALYSIS.md](CRYPTANALYSIS.md#fase-2).
+
+**R\*** (extrapolado, ω=2): κ=1→23, **κ=2→12 (diseño 128-bit Goldilocks)**, κ=3→8;
+mismo para t=4 y t=6. Coste en §Paso 4 (`experiments/05_spn_cost.py`).

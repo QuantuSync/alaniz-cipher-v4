@@ -21,13 +21,16 @@ from core.complex2d import Complex2D
 from crypto.linalg_fp import matrix_rank_fp
 from crypto.spn_field import (
     GOLDILOCKS_P, GOLDILOCKS_P_MINUS_1_FACTORIZATION, PROXY_PRIMES,
-    PROXY_PRIME_TINY, find_goldilocks_like_prime, is_goldilocks_like, is_prime,
-    min_bijective_exponent, sbox, sbox_exponents, sbox_inv,
+    PROXY_PRIME_TINY, PROXY_PRIME_30, find_goldilocks_like_prime,
+    is_goldilocks_like, is_prime, min_bijective_exponent, sbox, sbox_exponents,
+    sbox_inv,
 )
 from crypto.spn_mix import (
     branch_number, cauchy_mds, is_mds, poseidon2_m4, sheaf_mix_matrix,
     zero_entries,
 )
+from crypto.spn_permutation import SPNParams, permute, permute_inverse
+from crypto.spn_cico import build_cico_system, to_msolve
 
 
 # ─────────────────────────── 2a: field & S-box ───────────────────────────
@@ -70,7 +73,9 @@ def test_proxy_primes_mimic_goldilocks():
         assert is_goldilocks_like(q)
         assert min_bijective_exponent(q) == 7
         assert q < 2**31  # msolve characteristic limit
-    assert find_goldilocks_like_prime(2**16) == PROXY_PRIMES[1]
+    # 16-bit tier is the largest Goldilocks-like prime BELOW 2^16 (msolve
+    # segfaults on 65551 and other primes just above 2^16 -- see spn_field).
+    assert PROXY_PRIMES[1] < 2**16
     assert find_goldilocks_like_prime(2**30) == PROXY_PRIMES[2]
 
 
@@ -132,3 +137,67 @@ def test_gate2b_pinned_branch_numbers_goldilocks():
         M = sheaf_mix_matrix(K, p, seed)
         assert branch_number(M, p) == want_branch, name
         assert is_mds(M, p) == want_mds, name
+
+
+# ─────────────────────────── 3a: SPN permutation ───────────────────────────
+
+def test_spn_permutation_is_bijective_small_exhaustive():
+    """x^7 SPN over a tiny Goldilocks-like prime is a bijection; exhaustive on a
+    reduced 1-vertex-free slice is too large, so check the round map is invertible
+    on random points and that permute/permute_inverse roundtrip."""
+    p = PROXY_PRIMES[0]  # 31
+    for R in (1, 2, 3):
+        prm = SPNParams(Complex2D.tetrahedron(), p, R)
+        seen = set()
+        # sample a chunk of the domain; every image must be distinct (injective)
+        for a in range(0, p, 3):
+            x = [a, (a * 7) % p, (a * 13) % p, (a * 29) % p]
+            y = tuple(permute(prm, x))
+            assert y not in seen
+            seen.add(y)
+            assert permute_inverse(prm, list(y)) == x
+
+
+def test_spn_permutation_roundtrip_goldilocks():
+    p = GOLDILOCKS_P
+    for t_complex in (Complex2D.tetrahedron(), Complex2D.octahedron()):
+        for R in (1, 4, 8):
+            prm = SPNParams(t_complex, p, R)
+            x = [i * 123456789 % p for i in range(t_complex.n)]
+            assert permute_inverse(prm, permute(prm, x)) == x
+
+
+# ─────────────────────────── 3b: CICO model ───────────────────────────
+
+def test_cico_system_is_consistent_at_witness():
+    """The generated CICO system must vanish at the witness it is built from
+    (guards the msolve pipeline: an inconsistent build would read as a spurious
+    'no solution')."""
+    p = PROXY_PRIME_30
+    for K in (Complex2D.tetrahedron(), Complex2D.octahedron()):
+        for R in (1, 2, 3):
+            for c in (1, K.n - 1):
+                prm = SPNParams(K, p, R)
+                variables, polys, meta = build_cico_system(prm, c=c)
+                assert meta["n_vars"] == meta["n_eqs"] == K.n * R
+                val = {}
+                for r, st in enumerate(meta["states"]):
+                    for i, x in enumerate(st):
+                        val[f"x{r}_{i}"] = x % p
+                for poly in polys:
+                    expr = poly
+                    for name, x in sorted(val.items(), key=lambda kv: -len(kv[0])):
+                        expr = expr.replace(name, str(x))
+                    assert eval(expr.replace("^", "**")) % p == 0
+
+
+def test_msolve_serialization_has_no_carriage_returns():
+    """msolve mis-parses CRLF; to_msolve output must be LF-only (regression)."""
+    p = PROXY_PRIME_30
+    prm = SPNParams(Complex2D.tetrahedron(), p, 2)
+    variables, polys, _ = build_cico_system(prm, c=1)
+    text = to_msolve(variables, polys, p)
+    assert "\r" not in text
+    lines = text.strip().split("\n")
+    assert lines[0] == ",".join(variables)   # variable line
+    assert lines[1] == str(p)                 # characteristic line
