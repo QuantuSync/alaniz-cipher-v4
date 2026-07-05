@@ -38,13 +38,27 @@ coste **ω=2** (sparse-FGLM) y la ley **verificada** `D_I = 7^(R·m)·m·2^(R−
 | Algebraico, CICO capacidad m=4 | R*_alg ≈ **6** (2·log₂ D_I ≥ 128) | experiment 07, ley verificada |
 | Algebraico, CICO mínima m=1 (conservador) | R*_alg ≈ **18** | experiment 07 |
 
-**R = 8** = R*_alg(m=4)=6 + ~33% de margen. Corresponde al ataque CICO que rompe
-la **capacidad** del esponja (m = capacidad = 4 carriles), el relevante para
-colisión/preimagen. **Honestidad sobre el convenio:** la cota más conservadora
-(CICO mínima m=1, que no rompe el esponja de capacidad 4 pero acota la dureza de
-la permutación) daría R*_alg=18 ⇒ R≈24; pinchar cuál CICO es el vinculante para un
-uso concreto del esponja es **trabajo abierto**. Se documentan ambos; R=8 es la
-instancia de investigación calibrada al ataque de capacidad.
+**R = 8** = R*_alg(m=4)=6 + ~33% de margen. **Convenio de capacidad CERRADO**
+(antes abierto): el CICO real del esponja (rate=capacidad=4, t=2κ) deja libres los
+**κ=4 carriles de rate** ⇒ **m_efectivo = 4**, derivado del padding/partición y
+**confirmado** con el modelo real (acoplamiento cadena sobre la partición: la ley
+se cumple, t=6 κ=3 R=1 → 1029=7³·3, t=4 κ=2 R=1 → 98=7²·2; ver
+[CRYPTANALYSIS.md](CRYPTANALYSIS.md#sponge-cico)). Seguridad a R=8, m=4, Goldilocks
+(ω=2):
+
+| objetivo | bits (R=8) | ≥128? |
+|---|---|---|
+| Preimagen (algebraica, sin acoplamiento) | **179.7** | sí |
+| Preimagen (algebraica, con acoplamiento) | **197.7** | sí |
+| Colisión (genérica, capacidad 256-bit) | **128.0** | = target |
+| Colisión (algebraica) | 179.7 | sí |
+
+Incluso el baseline (sin el acoplamiento) da ~180 bits a m=4: R=8 cierra el flanco
+con margen. El atacante **no** puede usar m<4 (controlar los 4 carriles de
+capacidad exige ≥4 grados de libertad; el rate da exactamente 4). La colisión
+genérica queda **exactamente en 128** (birthday sobre 256-bit de capacidad); para
+margen en colisión, subir capacidad (κ=5 ⇒ 160-bit). El convenio ya **no es un
+hueco abierto**.
 
 ## 4. Coste (R=8, t=8)
 
@@ -61,7 +75,8 @@ explotar) son la palanca para bajar de aquí.
 | Permutación biyectiva + inversa exacta | **verificado** (roundtrip; test) |
 | Esponja determinista y sensible | **verificado** (test) |
 | Ley D_I, no-trampa, resistencia FreeLunch/CheapLunch/resultantes | **verificado** (R≤3 + punto grande 9604; huecos R≥4 reportados) |
-| R*_alg / R\* / coste | **extrapolado** (ω=2, ley verificada); convenio de capacidad **abierto** |
+| R*_alg / R\* / coste | **extrapolado** (ω=2, ley verificada) |
+| Convenio de capacidad (m_efectivo=4; R=8 ⇒ ≥179 bits preimagen, 128 colisión) | **CERRADO** (derivado + modelo real medido a R=1) |
 | Wide-trail (diferencial/lineal) | **verificado** (cotas S-box; método estándar) |
 
 Reproducir: `python -c "import sys;sys.path.insert(0,'src');from crypto.alaniz_ao import sponge_hash;print(sponge_hash([1,2,3,4,5]))"` y `pytest -q`.

@@ -96,8 +96,9 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
   parcial (D_I idéntico en 5–31 bits, estructural).
 - **Extrapolado (conjetura respaldada, ω=2):** R\* y coste vs Poseidon2.
 - **Abierto:** escalado a R≥4 / D_I≳10⁵ (límite F4/FGLM del motor; huecos
-  reportados, no evidencia en contra); residual Goldilocks real; convenio de
-  capacidad CICO del esponja; rondas parciales sobre la capa MDS.
+  reportados, no evidencia en contra); residual Goldilocks real; rondas parciales
+  sobre la capa MDS. **(El convenio de capacidad CICO ya NO está abierto — cerrado
+  en el bloque "Capacidad del esponja".)**
 
 ## Campaña final (primitiva candidata) — Bloques 1-5
 
@@ -108,6 +109,7 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
 | 3 — CheapLunch + resultantes | ✓ | Corridos: CICO-2 > CICO-1 (sin atajo); eliminante = D_I (98). `attacks/A_cheaplunch_resultant.py`. |
 | 4 — Instanciación | ✓ | **Alaniz-AO**: t=8, R=8, x⁷, MDS Cauchy, acoplamiento cadena mínimo, esponja rate/cap 4. `src/crypto/alaniz_ao.py`, `docs/SPEC.md`. ~1.30× Poseidon2 (R1CS). |
 | 5 — Transferencia | ✓ parcial | D_I idéntico en proxies 5–31 bits ⇒ estructural ⇒ transfiere; Goldilocks real abierto. `experiments/11`. |
+| **Capacidad del esponja** | ✓ (**CERRADO**) | m_efectivo=4 (derivado + modelo real medido: chain alcanza la ley, 98/1029 a R=1). R=8 ⇒ **preimagen ≥179 bits, colisión 128** (ω=2). `experiments/12`, [CRYPTANALYSIS.md](CRYPTANALYSIS.md#sponge-cico). |
 
 ---
 

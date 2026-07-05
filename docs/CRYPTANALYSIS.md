@@ -608,3 +608,38 @@ degree) son **característica-independientes (estructurales)** ⇒ la ley transf
 Goldilocks. **Abierto:** correr el sistema real sobre Goldilocks (ningún motor
 llega a char = 2⁶⁴). La transferencia pasa de conjetura a **parcial-verificada**
 (evidencia estructural fuerte; residual Goldilocks abierto).
+
+## sponge-cico — CICO real del esponja Alaniz-AO: flanco de capacidad CERRADO
+
+En una esponja el atacante resuelve el CICO con la **capacidad fijada**, no la
+permutación entera. Para rate=capacidad=κ (t=2κ): fija los κ carriles de capacidad
+de entrada y restringe κ de salida; libres = los **κ carriles de rate** ⇒
+**m_efectivo = κ**. Para Alaniz-AO (t=8, κ=4): **m=4**. El atacante no puede usar
+m<4 (controlar los 4 carriles de capacidad exige ≥4 grados de libertad).
+
+**Modelo real medido** (`experiments/12_sponge_cico.py`, acoplamiento cadena sobre
+la partición rate/capacidad, capacidad = últimos κ carriles fijados):
+
+| t | κ=m | R | indep D_I | chain D_I | ley `7^(Rm)·m·2^(R-1)` |
+|---|---|---|---|---|---|
+| 4 | 2 | 1 | 49 | **98** | 98 |
+| 4 | 2 | 2 | 2401 | timeout | 9604 |
+| 6 | 3 | 1 | 343 | **1029** | 1029 |
+
+El acoplamiento cadena **cubre los carriles de rate** ⇒ D_I alcanza la **ley
+completa** (98=7²·2; 1029=7³·3) en el modelo real del esponja, ≥ baseline 7^(Rm).
+(R=2 timeout = hueco.)
+
+**Seguridad a R=8, m=4, Goldilocks (ω=2):**
+
+| objetivo | bits | ≥128? |
+|---|---|---|
+| Preimagen algebraica (sin acoplamiento, baseline) | **179.7** | sí |
+| Preimagen algebraica (con acoplamiento) | **197.7** | sí |
+| Colisión genérica (capacidad 256-bit) | 128.0 | = target |
+| Colisión algebraica | 179.7 | sí |
+
+**Flanco de capacidad CERRADO:** con el m real (=4), R=8 da ≥179 bits en preimagen
+(incluso sin el acoplamiento) y cumple 128 en colisión. R*_alg(m=4)=6 ⇒ R=8 =
+6 + margen. La colisión genérica queda exactamente en el target (128); para margen,
+subir capacidad.
