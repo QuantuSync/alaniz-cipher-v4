@@ -1,0 +1,266 @@
+"""
+crypto/spn_coupling.py — sheaf structure as NON-LINEARITY (Camino 1).
+
+Previous result (commit d1ddcb2): the sheaf structure as a LINEAR mixing layer
+buys no algebraic security (D_I = 7^(R·m), independent of branch number). Here we
+move the geometry into the layer that DOES govern D_I: the coupling between
+S-boxes, driven by the 2-simplices (triangles) of the complex.
+
+Hard design constraint (lesson A5a): the coupling MUST be bijective. The literal
+form y_v = x_v^7 + Σ w·(x_u·x_v) is NOT a bijection (fixing earlier vertices it
+becomes x_v^7 + c·x_v, not a permutation polynomial). So the coupling is made
+TRIANGULAR: y_v depends only on S-boxes of EARLIER vertices (u < v in the fixed
+order), never on x_v itself inside the coupling term. Then each vertex inverts by
+a single 7th-root, and the whole layer is a bijection by construction (proved
+exhaustively in tests/test_coupling.py).
+
+Fixed vertex order: 0 < 1 < ... < t-1. Sheaf coupling from triangles T:
+for each triangle {u, u', v} in T with v = max(u,u',v), vertex v receives the
+quadratic cross term x_u · x_{u'} (both earlier), weighted by a public PRG scalar.
+
+Three coupling modes (measured side by side at the Step-2 gate):
+  * "indep" — baseline A: y_v = x_v^7                       (round degree 7)
+  * "add"   — B-add:  y_v = x_v^7 + Σ c·x_u·x_{u'}          (round degree 7)
+  * "input" — B-in:   y_v = (x_v + Σ c·x_u·x_{u'})^7        (round degree 14)
+
+All three are triangular ⇒ bijective. "add" adds the cross term AFTER the power
+(subdominant to x_v^7); "input" folds it into the S-box INPUT (its 7th power
+raises the round degree to 14 — the variant that can actually accelerate D_I,
+and the one FreeLunch/CheapLunch target).
+"""
+from __future__ import annotations
+
+from crypto.linalg_fp import matrix_inverse_fp, matvec_mul_fp, vec_add_fp, vec_sub_fp
+from crypto.sampling import prg_vec
+from crypto.spn_field import sbox, sbox_exponents, sbox_inv
+from crypto.spn_mix import cauchy_mds
+
+
+def triangle_coupling(K):
+    """For each vertex v, the list of (u, u') with u<u'<v and {u,u',v} a triangle.
+
+    These are the 2-simplices whose largest vertex is v: the earlier-only pairs
+    that couple into v (keeps the layer triangular ⇒ bijective).
+    """
+    at = {v: [] for v in range(K.n)}
+    for tri in K.triangles:
+        a, b, c = sorted(tri)
+        at[c].append((a, b))   # largest vertex c receives the pair (a,b)
+    return at
+
+
+def coupling_weights(K, p, seed):
+    """Public PRG weight per (triangle -> its max vertex) coupling term."""
+    at = triangle_coupling(K)
+    w = {}
+    idx = 0
+    for v in range(K.n):
+        for (a, b) in at[v]:
+            val = 0
+            while val == 0:
+                val = prg_vec(seed, "couple", idx, 1, p)[0]
+                idx += 1
+            w[(a, b, v)] = val
+    return w, at
+
+
+def coupling_forward(mode, K, x, w, at, p, d):
+    """Apply the (triangular) coupling S-box layer to state x ∈ F_p^t."""
+    y = [0] * K.n
+    for v in range(K.n):
+        cross = 0
+        for (a, b) in at[v]:
+            cross = (cross + w[(a, b, v)] * x[a] * x[b]) % p
+        if mode == "indep":
+            y[v] = sbox(x[v], p, d)
+        elif mode == "add":
+            y[v] = (sbox(x[v], p, d) + cross) % p
+        elif mode == "input":
+            y[v] = sbox((x[v] + cross) % p, p, d)
+        else:
+            raise ValueError(f"unknown coupling mode {mode!r}")
+    return y
+
+
+def coupling_inverse(mode, K, y, w, at, p, d_inv):
+    """Invert the coupling layer. Triangular: recover x_0, x_1, ... in order,
+    each from a single 7th root plus the already-known earlier vertices."""
+    x = [0] * K.n
+    for v in range(K.n):
+        cross = 0
+        for (a, b) in at[v]:              # a, b < v already recovered
+            cross = (cross + w[(a, b, v)] * x[a] * x[b]) % p
+        if mode == "indep":
+            x[v] = sbox_inv(y[v], p, d_inv)
+        elif mode == "add":
+            x[v] = sbox_inv((y[v] - cross) % p, p, d_inv)
+        elif mode == "input":
+            x[v] = (sbox_inv(y[v], p, d_inv) - cross) % p
+        else:
+            raise ValueError(f"unknown coupling mode {mode!r}")
+    return x
+
+
+# ─────────────────────────── coupled permutation ───────────────────────────
+
+class CoupledParams:
+    """Public params of the coupled AO SPN.  Round: x -> M·coupling(x) + rc,
+    with M a NEUTRAL Cauchy-MDS layer (identical across coupling modes so the
+    only variable under study is the coupling itself)."""
+
+    def __init__(self, K, p, R, mode, seed=b"coupling/v1", d=None):
+        self.K = K
+        self.t = K.n
+        self.p = p
+        self.R = R
+        self.mode = mode
+        self.d, self.d_inv = sbox_exponents(p, d)
+        self.M = cauchy_mds(K.n, p)
+        self.Minv = matrix_inverse_fp(self.M, p)
+        self.w, self.at = coupling_weights(K, p, seed + b"/couple")
+        self.rc = [prg_vec(seed + b"/rc", "round", r, self.t, p) for r in range(R)]
+        self.rc_init = prg_vec(seed + b"/rc", "init", 0, self.t, p)
+
+    def __repr__(self):
+        return f"CoupledParams(t={self.t}, p={self.p}, R={self.R}, mode={self.mode!r})"
+
+
+def permute(params, x):
+    p = params.p
+    state = vec_add_fp(x, params.rc_init, p)
+    for r in range(params.R):
+        state = coupling_forward(params.mode, params.K, state, params.w,
+                                 params.at, p, params.d)
+        state = matvec_mul_fp(params.M, state, p)
+        state = vec_add_fp(state, params.rc[r], p)
+    return state
+
+
+def permute_inverse(params, y):
+    p = params.p
+    state = list(y)
+    for r in reversed(range(params.R)):
+        state = vec_sub_fp(state, params.rc[r], p)
+        state = matvec_mul_fp(params.Minv, state, p)
+        state = coupling_inverse(params.mode, params.K, state, params.w,
+                                 params.at, p, params.d_inv)
+    return vec_sub_fp(state, params.rc_init, p)
+
+
+# ─────────────────────────── CICO model (FreeLunch-style) ───────────────────
+
+from crypto.spn_cico import _poly_from_terms, _signed_term, var  # noqa: E402
+
+
+def _cross_terms(params, r, j, sign):
+    """signed terms for  sign * Σ_{(a,b)∈at[j]} w_{abj}·x{r}_a·x{r}_b."""
+    p = params.p
+    terms = []
+    for (a, b) in params.at[j]:
+        c = (sign * params.w[(a, b, j)]) % p
+        term = _signed_term(c, f"{var(r, a)}*{var(r, b)}", p)
+        if term:
+            terms.append(term)
+    return terms
+
+
+def build_coupled_cico(params, c, seed_rhs=b"coupled-cico", witness=None):
+    """CICO system for the coupled construction (mode in {indep, add, input}).
+
+    Variables: x{r}_i (coupling inputs). For mode "input" we also introduce the
+    S-box-input variables a{r}_i = x{r}_i + cross (FreeLunch-faithful, keeps the
+    system degree at 7 and parenthesis-free — msolve mis-parses parentheses).
+    Fixes c input coords and t-c output coords ⇒ square 0-dim system.
+    """
+    p, t, R, M, d = params.p, params.t, params.R, params.M, params.d
+    if not (1 <= c <= t - 1):
+        raise ValueError("capacity c must satisfy 1 <= c <= t-1")
+    if witness is None:
+        witness = prg_vec(seed_rhs, "in", 0, t, p)
+    out = permute(params, witness)
+    use_a = params.mode == "input"
+
+    fixed_in = list(range(t - c, t))
+    fixed_out = list(range(0, t - c))
+
+    # ---- witness assignment for every variable (consistency guard) ----
+    x_states, a_states = [], []
+    s = vec_add_fp(witness, params.rc_init, p)
+    for r in range(R):
+        x_states.append(s)
+        a_vec = [0] * t
+        for j in range(t):
+            cross = sum(params.w[(a, b, j)] * s[a] * s[b]
+                        for (a, b) in params.at[j]) % p
+            a_vec[j] = (s[j] + cross) % p if use_a else s[j]
+        a_states.append(a_vec)
+        y = coupling_forward(params.mode, params.K, s, params.w, params.at, p, d)
+        s = vec_add_fp(matvec_mul_fp(M, y, p), params.rc[r], p)
+
+    variables = [var(r, i) for r in range(R) for i in range(t)]
+    if use_a:
+        variables += [f"a{r}_{i}" for r in range(R) for i in range(t)]
+    polys = []
+
+    def sbox_out_terms(r, j, coefM):
+        """signed terms for coefM * (S-box output of vertex j at round r)."""
+        terms = []
+        if use_a:                      # output = a{r}_j^7
+            term = _signed_term(coefM % p, f"a{r}_{j}^7", p)
+            if term:
+                terms.append(term)
+        else:                          # output = x{r}_j^7  (+ cross for "add")
+            term = _signed_term(coefM % p, f"{var(r, j)}^7", p)
+            if term:
+                terms.append(term)
+            if params.mode == "add":
+                for (a, b) in params.at[j]:
+                    cc = (coefM * params.w[(a, b, j)]) % p
+                    tt = _signed_term(cc, f"{var(r, a)}*{var(r, b)}", p)
+                    if tt:
+                        terms.append(tt)
+        return terms
+
+    # (def) for "input": a{r}_i - x{r}_i - cross_i = 0
+    if use_a:
+        for r in range(R):
+            for i in range(t):
+                terms = [("+", f"a{r}_{i}"), ("-", var(r, i))]
+                terms += _cross_terms(params, r, i, -1)
+                polys.append(_poly_from_terms(terms))
+
+    # (link) x{r+1}_i - Σ_j M[i][j]·sbox_out(r,j) - rc[r][i]
+    for r in range(R - 1):
+        for i in range(t):
+            terms = [("+", var(r + 1, i))]
+            for j in range(t):
+                terms += sbox_out_terms(r, j, (-M[i][j]) % p)
+            tt = _signed_term((-params.rc[r][i]) % p, "", p)
+            if tt:
+                terms.append(tt)
+            polys.append(_poly_from_terms(terms))
+
+    # (in) x{0}_i - (witness_i + rc_init_i)
+    for i in fixed_in:
+        val = (witness[i] + params.rc_init[i]) % p
+        terms = [("+", var(0, i))]
+        tt = _signed_term((-val) % p, "", p)
+        if tt:
+            terms.append(tt)
+        polys.append(_poly_from_terms(terms))
+
+    # (out) Σ_j M[i][j]·sbox_out(R-1,j) + rc[R-1][i] - out_i
+    for i in fixed_out:
+        terms = []
+        for j in range(t):
+            terms += sbox_out_terms(R - 1, j, M[i][j] % p)
+        rhs = (params.rc[R - 1][i] - out[i]) % p
+        tt = _signed_term(rhs, "", p)
+        if tt:
+            terms.append(tt)
+        polys.append(_poly_from_terms(terms))
+
+    meta = {"n_vars": len(variables), "n_eqs": len(polys),
+            "fixed_in": fixed_in, "fixed_out": fixed_out, "witness": witness,
+            "x_states": x_states, "a_states": a_states, "use_a": use_a, "c": c}
+    return variables, polys, meta
