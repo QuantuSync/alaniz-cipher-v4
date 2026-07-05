@@ -275,7 +275,10 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 > transfiere a Goldilocks (residual real abierto). **Hueco (2):** escalar
 > más allá de R=3 excede el motor (F4/FGLM); mayor punto resuelto = 9604; R≥4
 > abierto. **Veredicto: primitiva candidata con todos los flancos medidos salvo el
-> escalado del motor y el convenio de capacidad, ambos abiertos y documentados.**
+> escalado del motor, abierto y documentado.** (El convenio de capacidad, señalado
+> aquí como abierto en su momento, se **cerró** después: m_efectivo=4, R=8 ⇒
+> ≥179-bit preimagen / 128 colisión — ver [CRYPTANALYSIS.md](CRYPTANALYSIS.md)
+> (sponge-cico) y [SPEC.md](SPEC.md) §3.)
 
 > **Cierre de seguridad 2026-07-05 (FreeLunch sobre la mínima).** El +1 bit/ronda
 > **RESISTE FreeLunch** (2024/347). Como `D_I` es invariante al orden y al modelado,

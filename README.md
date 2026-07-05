@@ -9,6 +9,13 @@ several negative results along the way.
 > law, under an explicit cost model (ω=2). Nothing is called "secure" without that
 > label. See [docs/STATUS.md](docs/STATUS.md) for per-claim status.
 
+**Start here:** [docs/RESULTS.md](docs/RESULTS.md) — the executive summary (what was
+sought, the arc, the central result, the Alaniz-AO primitive, and the flank table).
+Then [docs/SPEC.md](docs/SPEC.md) (the concrete primitive),
+[docs/CRYPTANALYSIS.md](docs/CRYPTANALYSIS.md) (the attack log),
+[docs/OPEN_PROBLEMS.md](docs/OPEN_PROBLEMS.md) (what's left), and
+[docs/REPRODUCE.md](docs/REPRODUCE.md) (one command per result).
+
 ## Central result (verified)
 
 In an algebraic SPN over F_p (S-box `x⁷` over Goldilocks `p = 2⁶⁴−2³²+1`, MDS linear

@@ -53,7 +53,7 @@ y verificados (`crypto/spn_field.py::PROXY_PRIMES`):
 | proxy | valor | uso |
 |---|---|---|
 | `PROXY_PRIME_TINY` | 31 (= 2·3·5 + 1) | tests exhaustivos de biyectividad |
-| `PROXY_PRIME_16` | 65551 | instancias msolve pequeñas |
+| `PROXY_PRIME_16` | 65371 | instancias msolve pequeñas (65551 segfaultea msolve; ver CRYPTANALYSIS) |
 | `PROXY_PRIME_30` | 1073742091 | instancias msolve a máxima escala |
 
 Hipótesis de transferencia (etiquetada **conjetura** hasta el Paso 3): el
