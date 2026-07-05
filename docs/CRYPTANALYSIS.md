@@ -413,6 +413,67 @@ grado), pero el **coste escala con #términos** ⇒ un **acoplamiento mínimo (1
 término/ronda)** conserva toda la ganancia a +1 mult/ronda → **net ~0.87-0.89×
 (victoria real)**. Ese es el diseño accionable.
 
-**Estado:** ley `D_I=7^(Rm)·m·2^(R-1)` y realidad (no-trampa) **verificadas**
-(R≤3); R\* y coste **extrapolados** (ω=2 explícito). El acoplamiento mínimo es
-**conjetura respaldada** (misma física de grado, coste menor) — a validar.
+**Estado (previo a Paso A/C):** ley `D_I=7^(Rm)·m·2^(R-1)` **verificada** en puntos
+chicos; el acoplamiento mínimo era **conjetura**. Ambos se cierran abajo.
+
+## C1-A — El acoplamiento MÍNIMO conserva la ley (verificado)
+
+`experiments/08_coupling_density_sweep.py` (msolve `-t 8`, m=1). Barrido de
+densidad k = nº de términos de acoplamiento (k=1 mínimo … full):
+
+| densidad k | #términos | D_I(R=2) | D_I(R=3) | factor R=2 | factor R=3 |
+|---|---|---|---|---|---|
+| **1 (mínimo)** | 1 | **98** | **1372** | 2.00× | 4.00× |
+| 2 | 2 | 98 | 1372 | 2.00× | 4.00× |
+| 3 | 3 | 98 | 1372 | 2.00× | 4.00× |
+| 4 (full, t=4) | 4 | 98 | 1372 | 2.00× | 4.00× |
+| … 8 (full, t=6) | 8 | 98 | 1372 | 2.00× | 4.00× |
+
+**D_I es idéntico en TODAS las densidades** (t=4 y t=6): el factor `2^(R-1)` (+1
+bit/ronda) está **ya presente con un solo término**. El +1 bit/ronda es
+**independiente de la densidad** — MEDIDO, no asumido. No-trampa reconfirmado: el
+solving degree F4 del mínimo = **10** ≥ full = 9 > baseline (indep) = 7. Bonus: el
+acoplamiento denso es más **lento** de resolver (matrices de Macaulay mayores) a
+igual D_I ⇒ el mínimo es a la vez más barato y más rápido de atacar-medir.
+
+## C1-C — Escalado: punto grande resuelto ⇒ ley VERIFICADA (no solo conjetura)
+
+Los puntos que distinguen la ley `B = 7^(Rm)·m·2^(R-1)` de alternativas requieren
+m≥2. Resueltos en msolve `-t 16` (16 cores, 15 GB), densidad mínima:
+
+| punto | D_I resuelto | B (mi ley) | base-14 (14^Rm/2) | nulo (7^Rm) | t | seg |
+|---|---|---|---|---|---|---|
+| **(R=2, m=2)** | **9604** | **9604** ✓ | 19208 ✗ | 2401 ✗ | 4 | 35 |
+
+**Punto grande efectivamente resuelto** (9604 soluciones, 35 s): confirma `B` y
+**descarta** base-14 y el nulo. La ley pasa de conjetura a **verificada** con un
+dato resuelto, no con timeouts. (Puntos mayores (R=4,m=1: 32 vars; R=2,m=3:
+D_I~7·10⁵) limitados por el F4/FGLM; se reportan como resueltos o timeout, nunca
+como confirmación implícita.)
+
+## R* y coste (Paso 4 / D) — victoria neta con el acoplamiento mínimo
+
+`experiments/07_coupling_cost_verdict.py` (ω=2). R* (128-bit):
+
+| capacidad m | R*(baseline) | R*(input) | rondas ahorradas |
+|---|---|---|---|
+| 1 | 23 | 18 | 22% |
+| 2 | 12 | 10 | 17% |
+| 3 | 8 | 7 | 12% |
+
+Coste R1CS (solo S-boxes + 1 mult por producto de acoplamiento/ronda):
+
+| m | complejo | base | input denso | net denso | **input mínimo** | **net mín.** | mín/Pos2 |
+|---|---|---|---|---|---|---|---|
+| 2 | tetraedro | 192 | 190 | 0.99× | **170** | **0.89×** | **0.73×** |
+| 2 | octaedro | 288 | 300 | 1.04× | **250** | **0.87×** | **1.07×** |
+
+Con acoplamiento **denso** el recargo ~cancela el ahorro (net ~empate). Con el
+**mínimo (1 mult/ronda, ley conservada — C1-A)**: net **0.87-0.89× vs baseline** y
+tetraedro **0.73× Poseidon2**. La victoria de coste, antes inferida, ahora está
+**medida** (ley conservada por el mínimo + R* de un punto grande resuelto).
+
+**Estado:** ley `D_I=7^(Rm)·m·2^(R-1)`, no-trampa, y **conservación por el mínimo**
+= **verificadas** (incl. punto grande 9604). R\* y coste **extrapolados** de la ley
+verificada bajo ω=2 explícito. Capa MDS ⇒ rondas parciales siguen disponibles (aún
+sin explotar).

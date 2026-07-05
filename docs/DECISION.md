@@ -253,7 +253,19 @@ Ninguna cifra de bits se declara "segura" sin ese etiquetado.
 [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1-grade, C1-real), coste en
 `experiments/07_coupling_cost_verdict.py`. Motor: msolve real, proxies.
 
-### Veredicto: **PRIMER RESULTADO POSITIVO — candidato promisorio (acoplamiento mínimo), pendiente de validación a escala.**
+### Veredicto (actualizado tras Pasos A/C/D): **CANDIDATO REAL — el acoplamiento mínimo conserva la ley (medido) y da victoria neta de coste; ley apoyada por punto grande resuelto.**
+
+> **Actualización 2026-07-05 (Pasos A/C/D).** Lo que antes era conjetura ahora está
+> medido: **(A)** el acoplamiento **mínimo (1 término/ronda)** conserva la ley
+> `D_I=7^(Rm)·m·2^(R-1)` **idéntica** en todas las densidades (t=4 y t=6); **(C)**
+> punto grande **(R=2,m=2)=9604 resuelto** (35 s, msolve -t 16) que descarta base-14
+> (19208) y el nulo (2401) ⇒ ley **verificada**, no solo conjetura; **(D)** con el
+> mínimo el coste neto es **0.87-0.89× baseline**, tetraedro **0.73× Poseidon2**.
+> Dispara el criterio de **candidato real**. Detalle: [CRYPTANALYSIS.md](CRYPTANALYSIS.md)
+> (C1-A, C1-C). Sigue la lección honesta: timeouts (R=4, R=2/m=3) se reportan como
+> huecos, no como confirmación.
+
+### Veredicto previo (Paso 3-4 inicial): primer resultado positivo — candidato promisorio.
 
 Tras dos negativos (haz lineal = sin ventaja; SPN de haz no competitivo), mover la
 estructura de haz al **acoplamiento a la entrada de la S-box** es lo primero que

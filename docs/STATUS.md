@@ -79,7 +79,10 @@ Sesión 2 (2026-07-05). Estructura de haz movida de la capa lineal al
 | 1 — Acoplamiento triangular biyectivo | ✓ | `src/crypto/spn_coupling.py`, 3 modos (indep/add/input). Biyección **exhaustiva** (31⁴) + roundtrip. `tests/test_coupling.py`. `docs/COUPLING_SPEC.md`. |
 | 2 — Mini-gate de grado | ✓ | msolve real: `add`=baseline (no acelera); **`input` acelera** (`D_I=7^(Rm)·m·2^(R-1)`, +1 bit/ronda). `experiments/06`. |
 | 3 — ¿real o trampa FreeLunch? | ✓ | **REAL**: solving degree F4 más alto (9-10 vs 7-9); modelo solo-en-x reproduce D_I. No es trampa Griffin/Arion. [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1). |
-| 4 — Coste vs Poseidon2 + veredicto | ✓ (**GATE: esperando OK**) | R\* baja 17-22%; acoplamiento denso ~empata en R1CS, **acoplamiento mínimo → net 0.87-0.89×** (victoria). `experiments/07`. **Veredicto: primer positivo — candidato promisorio (acoplamiento mínimo)**; ver [DECISION.md](DECISION.md#veredicto-camino-1). |
+| 4 — Coste vs Poseidon2 + veredicto | ✓ | R\* baja 17-22%; acoplamiento denso ~empata en R1CS, **acoplamiento mínimo → net 0.87-0.89×** (victoria). `experiments/07`. |
+| A — Acoplamiento mínimo conserva la ley | ✓ | **Densidad-independiente** (medido, t=4 y t=6): D_I idéntico k=1…full. No-trampa (solving degree mín=10≥full=9>base=7). `experiments/08`. |
+| C — Escalar: punto grande resuelto | ✓ | **(R=2,m=2)=9604 resuelto** (msolve -t 16, 35s) ⇒ ley `7^(Rm)·m·2^(R-1)` **verificada** (descarta base-14 y nulo). Puntos mayores: F4/FGLM-limitados (timeouts reportados). |
+| D — Coste neto + veredicto | ✓ (**GATE: esperando OK**) | Mínimo: net 0.87-0.89× baseline, tetra 0.73× Poseidon2. **Veredicto: CANDIDATO REAL**; ver [DECISION.md](DECISION.md#veredicto-camino-1). |
 
 ---
 

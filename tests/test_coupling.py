@@ -31,6 +31,35 @@ def test_triangle_coupling_is_earlier_only():
                 assert a < b < v
 
 
+def test_density_selects_prefix_of_terms():
+    """density=k uses exactly the first k canonical triangle terms; each term is
+    triangular (a<b<v). density=None/'full' uses all."""
+    for K in (Complex2D.tetrahedron(), Complex2D.octahedron()):
+        full = C.triangle_terms(K)
+        for (v, a, b) in full:
+            assert a < b < v
+        for k in range(1, len(full) + 1):
+            at, terms = C.coupling_at(K, k)
+            assert terms == full[:k]
+            assert sum(len(pairs) for pairs in at.values()) == k
+        at_full, terms_full = C.coupling_at(K, None)
+        assert terms_full == full
+
+
+def test_minimal_coupling_bijective_exhaustive():
+    """The minimal (density=1) input coupling is a bijection (exhaustive 31^4)."""
+    p = PROXY_PRIMES[0]
+    K = Complex2D.tetrahedron()
+    prm = C.CoupledParams(K, p, 1, "input", density=1)
+    assert prm.n_coupling_terms() == 1
+    seen = set()
+    for x in itertools.product(range(p), repeat=4):
+        y = tuple(C.permute(prm, list(x)))
+        assert y not in seen
+        seen.add(y)
+    assert len(seen) == p ** 4
+
+
 def test_coupling_bijective_exhaustive_tiny():
     """Exhaustive over the full domain 31^4: each coupling mode is a bijection
     (one round; multi-round bijectivity then follows from composition + the

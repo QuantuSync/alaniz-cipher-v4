@@ -49,19 +49,56 @@ def triangle_coupling(K):
     return at
 
 
-def coupling_weights(K, p, seed):
-    """Public PRG weight per (triangle -> its max vertex) coupling term."""
+def triangle_terms(K):
+    """Ordered list of coupling terms (v, a, b), a<b<v, from the 2-simplices.
+
+    Canonical order: by target vertex v DESCENDING (highest = most downstream,
+    reached soonest by any free branch through the MDS layer), then by (a, b).
+    Truncating this list to the first k gives the density-k coupling; k=1 is the
+    minimal (single-term) coupling.
+    """
+    terms = []
     at = triangle_coupling(K)
+    for v in sorted(range(K.n), reverse=True):
+        for (a, b) in sorted(at[v]):
+            terms.append((v, a, b))
+    return terms
+
+
+def at_from_terms(terms):
+    """Build the per-vertex coupling dict v -> [(a,b), ...] from a term list."""
+    at = {}
+    for (v, a, b) in terms:
+        at.setdefault(v, []).append((a, b))
+    return at
+
+
+def coupling_at(K, density):
+    """Coupling structure at the requested density.
+
+    density=None or 'full' -> all triangle terms; an int k -> the first k terms
+    of triangle_terms(K) (k=1 is minimal).
+    """
+    terms = triangle_terms(K)
+    if density not in (None, "full"):
+        terms = terms[:density]
+    at = {v: [] for v in range(K.n)}
+    at.update(at_from_terms(terms))
+    return at, terms
+
+
+def coupling_weights(at, p, seed):
+    """Public PRG weight per coupling term (a,b)->v, keyed (a,b,v)."""
     w = {}
     idx = 0
-    for v in range(K.n):
+    for v in sorted(at):
         for (a, b) in at[v]:
             val = 0
             while val == 0:
                 val = prg_vec(seed, "couple", idx, 1, p)[0]
                 idx += 1
             w[(a, b, v)] = val
-    return w, at
+    return w
 
 
 def coupling_forward(mode, K, x, w, at, p, d):
@@ -108,21 +145,28 @@ class CoupledParams:
     with M a NEUTRAL Cauchy-MDS layer (identical across coupling modes so the
     only variable under study is the coupling itself)."""
 
-    def __init__(self, K, p, R, mode, seed=b"coupling/v1", d=None):
+    def __init__(self, K, p, R, mode, seed=b"coupling/v1", d=None, density=None):
         self.K = K
         self.t = K.n
         self.p = p
         self.R = R
         self.mode = mode
+        self.density = density
         self.d, self.d_inv = sbox_exponents(p, d)
         self.M = cauchy_mds(K.n, p)
         self.Minv = matrix_inverse_fp(self.M, p)
-        self.w, self.at = coupling_weights(K, p, seed + b"/couple")
+        self.at, self.terms = coupling_at(K, density)      # density=None -> full
+        self.w = coupling_weights(self.at, p, seed + b"/couple")
         self.rc = [prg_vec(seed + b"/rc", "round", r, self.t, p) for r in range(R)]
         self.rc_init = prg_vec(seed + b"/rc", "init", 0, self.t, p)
 
+    def n_coupling_terms(self):
+        return len(self.terms)
+
     def __repr__(self):
-        return f"CoupledParams(t={self.t}, p={self.p}, R={self.R}, mode={self.mode!r})"
+        return (f"CoupledParams(t={self.t}, p={self.p}, R={self.R}, "
+                f"mode={self.mode!r}, density={self.density}, "
+                f"terms={self.n_coupling_terms()})")
 
 
 def permute(params, x):

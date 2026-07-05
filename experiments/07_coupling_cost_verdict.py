@@ -95,6 +95,9 @@ def main():
     print("the measured triangle coupling the per-round surcharge ~cancels it in")
     print("R1CS at m=2 (net ~wash). A MINIMAL 1-term coupling keeps the full gain at")
     print("+1 mult/round -> net win (see 'minimal-cpl' column): the actionable design.")
+    print("VERIFIED (experiment 08): the minimal coupling reproduces D_I EXACTLY at")
+    print("every density, so 'minimal-cpl' is measured, not assumed; and the law")
+    print("itself is backed by a resolved large point (R=2,m=2)=9604 (not a timeout).")
 
 
 if __name__ == "__main__":

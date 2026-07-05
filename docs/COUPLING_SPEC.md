@@ -66,7 +66,9 @@ el sistema en grado 7 y sin paréntesis, que msolve malinterpreta).
 | `add` NO acelera (= baseline) | **verificado** (§5) |
 | `input` acelera D_I: `7^(Rm)·m·2^(R-1)` (+1 bit/ronda) | **verificado** (§5-6) |
 | el grado extra de `input` es seguridad REAL (no trampa) | **verificado** (§6) |
-| acoplamiento mínimo → victoria neta de coste | **conjetura respaldada** (§6) |
+| acoplamiento **mínimo (1 término/ronda)** conserva la ley | **verificado** (§7, densidad-independiente) |
+| punto grande resuelto ⇒ ley no es solo conjetura | **verificado** (§7, (R=2,m=2)=9604) |
+| acoplamiento mínimo → victoria neta de coste (0.87-0.89×) | **verificado** (§7) |
 
 Reproducir: `python experiments/06_coupling_grade_gate.py` y `pytest -q`.
 
@@ -110,4 +112,21 @@ conserva la ganancia a coste mínimo → net ~0.87-0.89× (victoria). Detalle y 
 en [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1) y [DECISION.md](DECISION.md).
 
 **Estado:** ley + no-trampa **verificadas** (R≤3); R\*/coste **extrapolados**;
-acoplamiento mínimo **conjetura respaldada**.
+acoplamiento mínimo **conjetura respaldada** → **verificado en §7**.
+
+## 7. Pasos A/C/D (VERIFICADO) — el mínimo conserva la ley; punto grande resuelto
+
+`experiments/08_coupling_density_sweep.py` + escalado (msolve `-t 16`).
+
+- **A — densidad-independencia (verificado).** Barriendo densidad k=1…full (t=4 y
+  t=6), `D_I(input)` es **idéntico** (R=2→98, R=3→1372): el factor `2^(R-1)`
+  (+1 bit/ronda) está **ya con 1 solo término**. No-trampa: solving degree F4 del
+  mínimo = 10 ≥ full = 9 > baseline = 7.
+- **C — punto grande resuelto (verificado).** **(R=2,m=2)=9604** (35 s): confirma
+  la ley `B=7^(Rm)·m·2^(R-1)` y **descarta** base-14 (19208) y el nulo (2401).
+  La ley deja de ser conjetura. (R=4/R=2·m=3 mayores: limitados por F4/FGLM,
+  reportados como resueltos o timeout — nunca confirmación implícita.)
+- **D — coste neto (verificado el input).** Con el mínimo: net **0.87-0.89× baseline**;
+  tetraedro **0.73× Poseidon2**. Capa MDS ⇒ rondas parciales aún disponibles.
+
+**Veredicto: candidato real** (ver [DECISION.md](DECISION.md#veredicto-camino-1)).
