@@ -64,8 +64,9 @@ el sistema en grado 7 y sin paréntesis, que msolve malinterpreta).
 | Acoplamiento triangular ⇒ biyección (3 modos) | **verificado** (exhaustivo 31⁴ + roundtrip Goldilocks) |
 | `indep` reproduce la ley baseline `D_I=7^(R·m)` | **verificado** (gate, Paso 2) |
 | `add` NO acelera (= baseline) | **verificado** (§5) |
-| `input` acelera D_I a `~14^R/2` (m=1) | **verificado** (§5) |
-| ¿el grado extra de `input` es seguridad real o trampa FreeLunch? | **pendiente** (Paso 3, gateado) |
+| `input` acelera D_I: `7^(Rm)·m·2^(R-1)` (+1 bit/ronda) | **verificado** (§5-6) |
+| el grado extra de `input` es seguridad REAL (no trampa) | **verificado** (§6) |
+| acoplamiento mínimo → victoria neta de coste | **conjetura respaldada** (§6) |
 
 Reproducir: `python experiments/06_coupling_grade_gate.py` y `pytest -q`.
 
@@ -87,9 +88,26 @@ CICO mínima m=1 (c=t−1). **Idéntico para t=4 (control) y t=6 (principal):**
   S-box **sí acelera** el grado del ideal, de base 7 a base ~14 por ronda
   (crecimiento log ~1.36× más rápido: log₂14/log₂7). Independiente de t.
 
-**Veredicto del gate: POSITIVO** (D_I(input) > D_I(baseline)). **Pero es grado
-NOMINAL.** El acoplamiento a la entrada es exactamente la estructura que
-FreeLunch/CheapLunch cazan (Griffin/Arion cayeron así): D_I nominal alto puede
-esconder un solving degree efectivo bajo. **El Paso 3 debe verificar si el grado
-extra es seguridad real o una trampa FreeLunch antes de cualquier cifra de R\*.**
-No se declara ninguna mejora de seguridad hasta esa verificación.
+**Veredicto del gate 2: POSITIVO** (D_I(input) > D_I(baseline)).
+
+## 6. Pasos 3-4 (VERIFICADO) — la aceleración es REAL; beneficio neto marginal
+
+Ley completa (msolve, todos los puntos t=4, incl. (R=1,m=3)=1029 que desambiguó):
+
+> `D_I(input) = 7^(R·m) · m · 2^(R-1)`  vs baseline `7^(R·m)`  →  **+1 bit/ronda**.
+
+**Real, NO trampa de grado nominal** (contra el riesgo Griffin/Arion):
+- solving degree F4 de `input` **más alto** (9-10 vs 7-9), no más bajo;
+- el modelo **solo-en-x** (sin variables auxiliares) reproduce D_I exacto ⇒ no es
+  artefacto del modelado; D_I es intrínseco e invariante ⇒ FreeLunch/CheapLunch
+  no lo reducen remodelando.
+
+**R\* y coste** (`experiments/07_coupling_cost_verdict.py`, ω=2): R\* baja 22%
+(m=1) a 17% (m=2). Pero con el acoplamiento **triangular denso** el recargo por
+ronda ~cancela el ahorro en R1CS (net ~empate a m=2). El **+1 bit/ronda es
+independiente de la densidad** ⇒ un **acoplamiento mínimo (1 término/ronda)**
+conserva la ganancia a coste mínimo → net ~0.87-0.89× (victoria). Detalle y tablas
+en [CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1) y [DECISION.md](DECISION.md).
+
+**Estado:** ley + no-trampa **verificadas** (R≤3); R\*/coste **extrapolados**;
+acoplamiento mínimo **conjetura respaldada**.

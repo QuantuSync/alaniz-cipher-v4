@@ -244,3 +244,60 @@ aritmetización."* Resultados propios:
 `D_I=7^(R·m)` **verificada** (R≤3). **R\* extrapolado (conjetura respaldada)**:
 κ=2 ⇒ **R\*=12** rondas, t-independiente, bajo modelo de coste ω=2 explícito.
 Ninguna cifra de bits se declara "segura" sin ese etiquetado.
+
+---
+
+## Veredicto Camino 1 — estructura de haz como NO-LINEALIDAD (acoplamiento)
+
+**Fecha:** 2026-07-05. **Evidencia:** [COUPLING_SPEC.md](COUPLING_SPEC.md),
+[CRYPTANALYSIS.md](CRYPTANALYSIS.md) (C1-grade, C1-real), coste en
+`experiments/07_coupling_cost_verdict.py`. Motor: msolve real, proxies.
+
+### Veredicto: **PRIMER RESULTADO POSITIVO — candidato promisorio (acoplamiento mínimo), pendiente de validación a escala.**
+
+Tras dos negativos (haz lineal = sin ventaja; SPN de haz no competitivo), mover la
+estructura de haz al **acoplamiento a la entrada de la S-box** es lo primero que
+**compra grado algebraico real**:
+
+1. **Aceleración verificada y REAL (no trampa).** `D_I(input)=7^(Rm)·m·2^(R-1)`,
+   un **+1 bit de grado del ideal por ronda** sobre el baseline. Confirmado no-
+   trampa (a diferencia de Griffin/Arion): el solving degree F4 sube (9-10 vs
+   7-9) y el modelo solo-en-x reproduce D_I ⇒ intrínseco, no reducible por
+   FreeLunch/CheapLunch (D_I es invariante). El acoplamiento **aditivo** (`add`)
+   no aporta nada; solo el de **entrada** (`input`).
+
+2. **Pero el beneficio neto con acoplamiento denso es marginal.** R\* baja 17-22%,
+   pero el recargo del acoplamiento **triangular** (3-6 mults/ronda) ~cancela el
+   ahorro en R1CS (net ~empate a m=2: tetra 0.99×, octa 1.04×).
+
+3. **La palanca: el +1 bit/ronda es INDEPENDIENTE de la densidad del
+   acoplamiento.** Lo da cualquier acoplamiento a la entrada que suba el grado.
+   Un **acoplamiento mínimo (1 término/ronda)** conserva toda la ganancia a +1
+   mult/ronda ⇒ **net ~0.87-0.89× vs baseline** y ≤ ~1.3× Poseidon2 (tetra 0.81×).
+   Dispara el criterio de **candidato real** (baja R\*, resiste FreeLunch/
+   CheapLunch, ≤2× Poseidon2).
+
+### Contribución (positiva y honesta)
+
+- **Fenómeno nuevo y limpio:** la geometría simplicial, como acoplamiento no-lineal
+  a la entrada de la S-box, **añade exactamente +1 bit de grado CICO por ronda** —
+  medido, real, no-trampa. Contrasta con el resultado negativo de la capa lineal:
+  *dónde* se pone la estructura (no-linealidad vs linealidad) decide si compra
+  seguridad.
+- **Diseño accionable:** acoplamiento **mínimo/disperso** (1 término/ronda) sobre
+  una capa MDS — conserva la ganancia y da victoria neta de coste. La capa MDS
+  (a diferencia del haz lineal sub-MDS) además **no bloquea las rondas parciales**,
+  otra palanca de coste aún sin explotar.
+
+### Disparadores de NO-GO (no cumplidos)
+
+- Que a escala (R,m grandes en msolve/Sage) la ley `+1 bit/ronda` se rompa o el
+  solving degree colapse (trampa tardía). No observado a R≤3.
+- Que el acoplamiento mínimo pierda la ganancia (que dependa de la densidad tras
+  todo). A verificar en la validación (Paso siguiente propuesto).
+
+### Cifras (estado)
+
+Ley `D_I=7^(Rm)·m·2^(R-1)` y no-trampa **verificadas** (R≤3, dos modelados).
+R\* y coste **extrapolados** (ω=2 explícito). Acoplamiento mínimo = **conjetura
+respaldada**. Ninguna cifra "segura" sin ese etiquetado.

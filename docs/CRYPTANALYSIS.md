@@ -335,3 +335,84 @@ quien reproduzca):
    proxies Goldilocks-like que msolve maneja (31 / **65371** / 1073742091). Además
    msolve malinterpreta la multiplicación explícita `v*v*...` (usar siempre `^`) y
    los paréntesis (emitir polinomios expandidos).
+
+---
+
+# Camino 1 (estructura de haz como NO-LINEALIDAD) — acoplamiento de S-boxes
+
+Movida la geometría de la capa lineal (donde no comparaba nada, Fase 2) al
+**acoplamiento entre S-boxes** vía los 2-símplices del complejo. Capa lineal =
+MDS Cauchy neutra idéntica en todas las modalidades. Diseño en
+[COUPLING_SPEC.md](COUPLING_SPEC.md). Motor: msolve real, proxy 1073742091.
+
+## Tabla resumen (Camino 1)
+
+| ID | Ataque | Escala | Resultado | Estado |
+|----|--------|--------|-----------|--------|
+| **C1-grade** | ¿Acelera el acoplamiento el grado del ideal? | t∈{4,6}, R∈{1,2,3}, msolve | `add` NO (=7^Rm); **`input` SÍ**: `D_I=7^(Rm)·m·2^(R-1)` (+1 bit/ronda) | verificado |
+| **C1-real** | ¿Es seguridad real o trampa de grado nominal (Griffin/Arion)? | t=4, R∈{2,3}, m=1 | **REAL**: solving degree F4 **más alto** (9-10 vs 7-9); modelo solo-en-x reproduce D_I exacto | verificado |
+| C1-FreeLunch/CheapLunch | 2024/347, 2025/2040 (coste = D_I) | modelado | D_I(input) genuinamente mayor ⇒ coste mayor bajo ambos; sin atajo por remodelado (D_I invariante) | parcial |
+
+## C1-grade — El acoplamiento a la entrada acelera D_I (verificado)
+
+Tres modalidades biyectivas triangulares sobre la misma capa MDS Cauchy:
+`indep` (y_v=x_v⁷), `add` (y_v=x_v⁷+Σc·x_u·x_{u'}), `input` (y_v=(x_v+Σc·x_u·x_{u'})⁷).
+CICO estilo FreeLunch (`src/crypto/spn_coupling.py`; en modo `input`, variable
+auxiliar `a{r}_v` por S-box). Medición (msolve, m=1, idéntico t=4 y t=6):
+
+| R | baseline 7^R | `indep` | `add` | `input` |
+|---|---|---|---|---|
+| 1 | 7 | 7 | 7 | 7 |
+| 2 | 49 | 49 | 49 | **98** |
+| 3 | 343 | 343 | 343 | **1372** |
+
+Puntos adicionales `input` (t=4): (R=1,m=2)=98, (R=1,m=3)=1029. **Ley ajustada a
+todos los puntos:**
+
+> `D_I(input) = 7^(R·m) · m · 2^(R-1)`  vs baseline `7^(R·m)`.
+
+El factor `m·2^(R-1)` = **+1 bit de grado del ideal por ronda** (el `2^(R-1)`).
+A m=1 coincide con duplicar la base (7→14); al crecer m el peso relativo baja.
+`add` (cruce aditivo, subdominante a x_v⁷) **no aporta nada**, como se predijo.
+
+## C1-real — Es seguridad real, NO trampa de grado nominal (verificado)
+
+La advertencia Griffin/Arion: acoplamiento cruzado ⇒ D_I nominal alto pero solving
+degree efectivo bajo. Aquí lo contrario:
+
+1. **Solving degree F4 MÁS ALTO para `input`** (t=4, m=1): R=2 → 9 vs 7; R=3 → 10
+   vs 9. F4 trabaja genuinamente más, no menos.
+2. **El modelo solo-en-x reproduce D_I exacto** (98, 1372): las variables
+   auxiliares `a` NO inflan D_I; es intrínseco al ideal. (D_I = nº de soluciones,
+   invariante al modelado ⇒ FreeLunch/CheapLunch no pueden reducirlo remodelando.)
+
+Conclusión: la estructura de haz **como acoplamiento a la entrada de la S-box SÍ
+compra grado algebraico real** — lo que la versión lineal (Fase 2) no hacía.
+
+## R* y coste (Paso 4) — la aceleración es real pero su beneficio neto es marginal
+
+`experiments/07_coupling_cost_verdict.py` (ω=2). R* (128-bit):
+
+| capacidad m | R*(baseline) | R*(input) | rondas ahorradas |
+|---|---|---|---|
+| 1 | 23 | 18 | 22% |
+| 2 | 12 | 10 | 17% |
+| 3 | 8 | 7 | 12% |
+
+Coste R1CS (solo S-boxes + 1 mult por producto de acoplamiento/ronda):
+
+| m | complejo | base | input (triáng.) | net | input/Pos2 | **coupling mínimo** |
+|---|---|---|---|---|---|---|
+| 2 | tetraedro | 192 | 190 | 0.99× | 0.81× | **0.89×** |
+| 2 | octaedro | 288 | 300 | 1.04× | 1.28× | **0.87×** |
+
+**Con el acoplamiento triangular (denso) el recargo por ronda ~cancela el ahorro
+de rondas a m=2 (net ~empate).** Clave: el **+1 bit/ronda es independiente de la
+densidad** del acoplamiento (lo da cualquier acoplamiento a la entrada que suba el
+grado), pero el **coste escala con #términos** ⇒ un **acoplamiento mínimo (1
+término/ronda)** conserva toda la ganancia a +1 mult/ronda → **net ~0.87-0.89×
+(victoria real)**. Ese es el diseño accionable.
+
+**Estado:** ley `D_I=7^(Rm)·m·2^(R-1)` y realidad (no-trampa) **verificadas**
+(R≤3); R\* y coste **extrapolados** (ω=2 explícito). El acoplamiento mínimo es
+**conjetura respaldada** (misma física de grado, coste menor) — a validar.
